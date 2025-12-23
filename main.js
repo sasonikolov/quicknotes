@@ -804,7 +804,6 @@ function QuickNotesApp() {
 						<i class="bi bi-clock me-1"></i>${t('created')}: ${createdAt.toLocaleString()}
 					</div>
 					${editedInfo}
-					${ipInfo}
 					<div class="note-actions">
 						<button class="btn btn-info btn-sm" id="view_${note.id}"><i class="bi bi-chevron-down me-1" id="viewIcon_${note.id}"></i>${t('view')}</button>
 						<button class="btn btn-warning btn-sm" id="edit_${note.id}"><i class="bi bi-pencil me-1"></i>${t('edit')}</button>
@@ -814,6 +813,7 @@ function QuickNotesApp() {
 				<div class="note-content-collapse" id="content_${note.id}" style="display: none;">
 					<div class="card-body pt-0">
 						<pre class="note-content-pre">${note.content}</pre>
+						${ipInfo ? `<div class="mt-3 pt-2 border-top">${ipInfo}</div>` : ''}
 					</div>
 				</div>
 			`;
