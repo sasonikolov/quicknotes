@@ -331,3 +331,5 @@ MIT - Use it, modify it, sell it. Just don't blame us.
 ---
 
 **Made with care for people who value simplicity and privacy.**
+
+A project by [vollstart.com](https://vollstart.com)
