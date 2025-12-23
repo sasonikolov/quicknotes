@@ -95,7 +95,17 @@ const LANGUAGES = {
 		offlineBadge: 'Offline',
 		storeLocally: 'Store locally (browser only)',
 		storedLocally: 'Local',
-		storedOnServer: 'Server'
+		storedOnServer: 'Server',
+		// Sorting
+		sortBy: 'Sort',
+		sortByName: 'Name',
+		sortByDate: 'Date',
+		sortByLastEdit: 'Last edit',
+		lastEdited: 'Edited',
+		createdFrom: 'from',
+		// IP
+		createdFromIP: 'Created from',
+		lastEditedFromIP: 'Last edited from'
 	},
 
 	de: {
@@ -184,7 +194,15 @@ const LANGUAGES = {
 		offlineBadge: 'Offline',
 		storeLocally: 'Lokal speichern (nur Browser)',
 		storedLocally: 'Lokal',
-		storedOnServer: 'Server'
+		storedOnServer: 'Server',
+		sortBy: 'Sortieren',
+		sortByName: 'Name',
+		sortByDate: 'Datum',
+		sortByLastEdit: 'Zuletzt bearbeitet',
+		lastEdited: 'Bearbeitet',
+		createdFrom: 'von',
+		createdFromIP: 'Erstellt von',
+		lastEditedFromIP: 'Zuletzt bearbeitet von'
 	},
 
 	it: {
@@ -273,7 +291,15 @@ const LANGUAGES = {
 		offlineBadge: 'Offline',
 		storeLocally: 'Salva localmente (solo browser)',
 		storedLocally: 'Locale',
-		storedOnServer: 'Server'
+		storedOnServer: 'Server',
+		sortBy: 'Ordina',
+		sortByName: 'Nome',
+		sortByDate: 'Data',
+		sortByLastEdit: 'Ultima modifica',
+		lastEdited: 'Modificato',
+		createdFrom: 'da',
+		createdFromIP: 'Creato da',
+		lastEditedFromIP: 'Ultima modifica da'
 	},
 
 	fr: {
@@ -362,7 +388,15 @@ const LANGUAGES = {
 		offlineBadge: 'Hors ligne',
 		storeLocally: 'Stocker localement (navigateur uniquement)',
 		storedLocally: 'Local',
-		storedOnServer: 'Serveur'
+		storedOnServer: 'Serveur',
+		sortBy: 'Trier',
+		sortByName: 'Nom',
+		sortByDate: 'Date',
+		sortByLastEdit: 'Dernière modif.',
+		lastEdited: 'Modifié',
+		createdFrom: 'de',
+		createdFromIP: 'Créé depuis',
+		lastEditedFromIP: 'Dernière modif. depuis'
 	},
 
 	pt: {
@@ -451,7 +485,15 @@ const LANGUAGES = {
 		offlineBadge: 'Offline',
 		storeLocally: 'Armazenar localmente (apenas navegador)',
 		storedLocally: 'Local',
-		storedOnServer: 'Servidor'
+		storedOnServer: 'Servidor',
+		sortBy: 'Ordenar',
+		sortByName: 'Nome',
+		sortByDate: 'Data',
+		sortByLastEdit: 'Última edição',
+		lastEdited: 'Editado',
+		createdFrom: 'de',
+		createdFromIP: 'Criado de',
+		lastEditedFromIP: 'Última edição de'
 	},
 
 	ja: {
@@ -540,7 +582,15 @@ const LANGUAGES = {
 		offlineBadge: 'オフライン',
 		storeLocally: 'ローカルに保存（ブラウザのみ）',
 		storedLocally: 'ローカル',
-		storedOnServer: 'サーバー'
+		storedOnServer: 'サーバー',
+		sortBy: '並べ替え',
+		sortByName: '名前',
+		sortByDate: '日付',
+		sortByLastEdit: '最終編集',
+		lastEdited: '編集',
+		createdFrom: 'から',
+		createdFromIP: '作成元',
+		lastEditedFromIP: '最終編集元'
 	},
 
 	th: {
@@ -629,7 +679,15 @@ const LANGUAGES = {
 		offlineBadge: 'ออฟไลน์',
 		storeLocally: 'จัดเก็บในเครื่อง (เบราว์เซอร์เท่านั้น)',
 		storedLocally: 'ในเครื่อง',
-		storedOnServer: 'เซิร์ฟเวอร์'
+		storedOnServer: 'เซิร์ฟเวอร์',
+		sortBy: 'เรียงตาม',
+		sortByName: 'ชื่อ',
+		sortByDate: 'วันที่',
+		sortByLastEdit: 'แก้ไขล่าสุด',
+		lastEdited: 'แก้ไข',
+		createdFrom: 'จาก',
+		createdFromIP: 'สร้างจาก',
+		lastEditedFromIP: 'แก้ไขล่าสุดจาก'
 	},
 
 	zh: {
@@ -718,7 +776,15 @@ const LANGUAGES = {
 		offlineBadge: '离线',
 		storeLocally: '本地存储（仅限浏览器）',
 		storedLocally: '本地',
-		storedOnServer: '服务器'
+		storedOnServer: '服务器',
+		sortBy: '排序',
+		sortByName: '名称',
+		sortByDate: '日期',
+		sortByLastEdit: '最后编辑',
+		lastEdited: '编辑',
+		createdFrom: '来自',
+		createdFromIP: '创建自',
+		lastEditedFromIP: '最后编辑自'
 	}
 };
 

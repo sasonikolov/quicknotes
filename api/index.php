@@ -156,6 +156,93 @@ function generateGlobalCode() {
 	return str_replace(array_keys($replacements), array_values($replacements), $pattern);
 }
 
+function getClientIP() {
+	$headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'];
+	foreach ($headers as $header) {
+		if (!empty($_SERVER[$header])) {
+			$ip = $_SERVER[$header];
+			// Handle comma-separated IPs (X-Forwarded-For)
+			if (strpos($ip, ',') !== false) {
+				$ip = trim(explode(',', $ip)[0]);
+			}
+			if (filter_var($ip, FILTER_VALIDATE_IP)) {
+				return $ip;
+			}
+		}
+	}
+	return 'unknown';
+}
+
+function getRequestOrigin() {
+	// Check Origin header first, then Referer
+	if (!empty($_SERVER['HTTP_ORIGIN'])) {
+		return parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
+	}
+	if (!empty($_SERVER['HTTP_REFERER'])) {
+		return parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+	}
+	return null;
+}
+
+function matchDomain($domain, $pattern) {
+	// Exact match
+	if ($domain === $pattern) {
+		return true;
+	}
+	// Wildcard match (*.example.com)
+	if (strpos($pattern, '*.') === 0) {
+		$suffix = substr($pattern, 2);
+		return $domain === $suffix || substr($domain, -strlen($suffix) - 1) === '.' . $suffix;
+	}
+	return false;
+}
+
+function verifyApiKey() {
+	$config = getConfig();
+
+	// If API key not required, allow access
+	if (empty($config['require_api_key'])) {
+		return true;
+	}
+
+	// Check if request is from same origin (browser app)
+	$origin = getRequestOrigin();
+	$serverHost = $_SERVER['HTTP_HOST'] ?? '';
+	if ($origin && $origin === $serverHost) {
+		return true; // Same-origin request, no API key needed
+	}
+
+	// Get API key from header or parameter
+	$apiKey = $_SERVER['HTTP_X_API_KEY'] ?? $_REQUEST['api_key'] ?? '';
+
+	if (empty($apiKey)) {
+		return false;
+	}
+
+	// Check if key exists and is enabled
+	$keys = $config['api_keys'] ?? [];
+	if (!isset($keys[$apiKey]) || empty($keys[$apiKey]['enabled'])) {
+		return false;
+	}
+
+	$keyConfig = $keys[$apiKey];
+
+	// Check domain restrictions if any
+	if (!empty($keyConfig['domains']) && is_array($keyConfig['domains'])) {
+		if (!$origin) {
+			return false; // Domain restriction but no origin
+		}
+		foreach ($keyConfig['domains'] as $allowedDomain) {
+			if (matchDomain($origin, $allowedDomain)) {
+				return true;
+			}
+		}
+		return false; // No domain matched
+	}
+
+	return true; // Key valid, no domain restrictions
+}
+
 function verifyGlobalCode($code) {
 	$config = getConfig();
 	if (!$config['require_global_code']) {
@@ -192,6 +279,13 @@ if (!empty($login) && !empty($config['blocked_usernames']) && in_array($login, $
 	exit;
 }
 
+// ============ API Key Verification ============
+// Verify API key for external access (if required)
+if (!verifyApiKey()) {
+	echo json_encode(['success' => false, 'message' => 'Invalid or missing API key.', 'api_key_error' => true]);
+	exit;
+}
+
 // --- get_config: Get public config values ---
 if ($action === 'get_config') {
 	echo json_encode([
@@ -199,7 +293,8 @@ if ($action === 'get_config') {
 		'config' => [
 			'enable_pwa' => $config['enable_pwa'] ?? true,
 			'enable_offline_mode' => $config['enable_offline_mode'] ?? true,
-			'require_global_code' => $config['require_global_code'] ?? true
+			'require_global_code' => $config['require_global_code'] ?? true,
+			'store_ip' => $config['store_ip'] ?? false
 		]
 	]);
 	exit;
@@ -404,6 +499,12 @@ if ($action === 'add_note') {
 		'updated_at' => date('c')
 	];
 
+	// Store IP if enabled
+	if (!empty($config['store_ip'])) {
+		$note['created_ip'] = getClientIP();
+		$note['updated_ip'] = $note['created_ip'];
+	}
+
 	$userData['notes'][] = $note;
 	saveUserData($login, $userData);
 
@@ -429,6 +530,10 @@ if ($action === 'update_note') {
 			$note['title'] = $title;
 			$note['content'] = $content;
 			$note['updated_at'] = date('c');
+			// Store IP if enabled
+			if (!empty($config['store_ip'])) {
+				$note['updated_ip'] = getClientIP();
+			}
 			$found = true;
 			break;
 		}

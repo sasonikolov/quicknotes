@@ -13,10 +13,40 @@ function QuickNotesApp() {
 	let APP_CONFIG = {
 		enable_pwa: true,
 		enable_offline_mode: true,
-		require_global_code: true
+		require_global_code: true,
+		store_ip: false
 	};
 
+	// Sort settings
+	let currentSort = localStorage.getItem('notes_sort') || 'date_desc';
+
 	this.notes = [];
+
+	function sortNotes(notes, sortType) {
+		const sorted = [...notes];
+		switch (sortType) {
+			case 'name_asc':
+				return sorted.sort((a, b) => a.title.localeCompare(b.title));
+			case 'name_desc':
+				return sorted.sort((a, b) => b.title.localeCompare(a.title));
+			case 'date_asc':
+				return sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+			case 'date_desc':
+				return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+			case 'edit_asc':
+				return sorted.sort((a, b) => new Date(a.updated_at || a.created_at) - new Date(b.updated_at || b.created_at));
+			case 'edit_desc':
+				return sorted.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+			default:
+				return sorted;
+		}
+	}
+
+	function setSort(sortType) {
+		currentSort = sortType;
+		localStorage.setItem('notes_sort', sortType);
+		displayNotes();
+	}
 
 	// ============ LocalStorage Functions ============
 
@@ -706,18 +736,76 @@ function QuickNotesApp() {
 			return;
 		}
 
-		this.notes.forEach(note => {
+		// Sort dropdown
+		const sortBar = document.createElement('div');
+		sortBar.className = 'd-flex justify-content-end mb-3';
+		sortBar.innerHTML = `
+			<div class="dropdown">
+				<button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+					<i class="bi bi-sort-down me-1"></i>${t('sortBy')}
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+					<li><a class="dropdown-item ${currentSort === 'name_asc' ? 'active' : ''}" href="#" data-sort="name_asc"><i class="bi bi-sort-alpha-down me-2"></i>${t('sortByName')} (A-Z)</a></li>
+					<li><a class="dropdown-item ${currentSort === 'name_desc' ? 'active' : ''}" href="#" data-sort="name_desc"><i class="bi bi-sort-alpha-up me-2"></i>${t('sortByName')} (Z-A)</a></li>
+					<li><hr class="dropdown-divider"></li>
+					<li><a class="dropdown-item ${currentSort === 'date_desc' ? 'active' : ''}" href="#" data-sort="date_desc"><i class="bi bi-calendar-minus me-2"></i>${t('sortByDate')} (↓)</a></li>
+					<li><a class="dropdown-item ${currentSort === 'date_asc' ? 'active' : ''}" href="#" data-sort="date_asc"><i class="bi bi-calendar-plus me-2"></i>${t('sortByDate')} (↑)</a></li>
+					<li><hr class="dropdown-divider"></li>
+					<li><a class="dropdown-item ${currentSort === 'edit_desc' ? 'active' : ''}" href="#" data-sort="edit_desc"><i class="bi bi-pencil me-2"></i>${t('sortByLastEdit')} (↓)</a></li>
+					<li><a class="dropdown-item ${currentSort === 'edit_asc' ? 'active' : ''}" href="#" data-sort="edit_asc"><i class="bi bi-pencil me-2"></i>${t('sortByLastEdit')} (↑)</a></li>
+				</ul>
+			</div>
+		`;
+		notesDiv.appendChild(sortBar);
+
+		// Add event listeners for sort
+		setTimeout(() => {
+			sortBar.querySelectorAll('[data-sort]').forEach(el => {
+				el.addEventListener('click', (e) => {
+					e.preventDefault();
+					setSort(el.dataset.sort);
+				});
+			});
+		}, 0);
+
+		// Sort notes
+		const sortedNotes = sortNotes(this.notes, currentSort);
+
+		sortedNotes.forEach(note => {
 			const noteElement = document.createElement('div');
 			noteElement.className = 'card';
 			const storageBadge = note._isLocal
-				? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-hdd me-1"></i>${t('storedLocally')}</span>`
-				: `<span class="badge bg-primary ms-2"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
+				? `<span class="badge bg-warning text-dark"><i class="bi bi-hdd me-1"></i>${t('storedLocally')}</span>`
+				: `<span class="badge bg-primary"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
+
+			// Format dates
+			const createdDate = new Date(note.created_at).toLocaleDateString();
+			const updatedAt = note.updated_at ? new Date(note.updated_at) : null;
+			const editedInfo = updatedAt && updatedAt.getTime() !== new Date(note.created_at).getTime()
+				? `<span class="ms-3"><i class="bi bi-pencil me-1"></i>${t('lastEdited')}: ${updatedAt.toLocaleString()}</span>`
+				: '';
+
+			// IP info (only for server notes when IP tracking is enabled)
+			let ipInfo = '';
+			if (!note._isLocal && APP_CONFIG.store_ip) {
+				if (note.created_ip) {
+					ipInfo += `<div class="small text-muted mt-1"><i class="bi bi-geo-alt me-1"></i>${t('createdFromIP')}: ${note.created_ip}</div>`;
+				}
+				if (note.updated_ip && note.updated_ip !== note.created_ip) {
+					ipInfo += `<div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>${t('lastEditedFromIP')}: ${note.updated_ip}</div>`;
+				}
+			}
+
 			noteElement.innerHTML = `
 				<div class="card-body">
-					<h5 class="card-title">${note.title}${storageBadge}</h5>
+					<div class="d-flex justify-content-between align-items-start mb-2">
+						<h5 class="card-title mb-0">${note.title}</h5>
+						${storageBadge}
+					</div>
 					<h6 class="card-subtitle">
-						<i class="bi bi-clock me-1"></i>${t('created')}: ${new Date(note.created_at).toLocaleString()}
+						<i class="bi bi-clock me-1"></i>${t('created')}: ${new Date(note.created_at).toLocaleString()}${editedInfo}
 					</h6>
+					${ipInfo}
 					<div class="note-actions">
 						<button class="btn btn-info btn-sm" id="view_${note.id}"><i class="bi bi-chevron-down me-1" id="viewIcon_${note.id}"></i>${t('view')}</button>
 						<button class="btn btn-warning btn-sm" id="edit_${note.id}"><i class="bi bi-pencil me-1"></i>${t('edit')}</button>
@@ -748,7 +836,7 @@ function QuickNotesApp() {
 
 			noteElement.querySelector(`#delete_${note.id}`).addEventListener('click', () => {
 				if (confirm(t('deleteNote'))) {
-					if (STORAGE_MODE === 'local') {
+					if (STORAGE_MODE === 'local' || note._isLocal) {
 						localDeleteNote(note.id);
 						showInformation(t('noteDeleted'));
 						loadNotes();
