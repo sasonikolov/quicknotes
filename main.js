@@ -775,8 +775,8 @@ function QuickNotesApp() {
 			const noteElement = document.createElement('div');
 			noteElement.className = 'card';
 			const storageBadge = note._isLocal
-				? `<span class="badge bg-warning text-dark"><i class="bi bi-hdd me-1"></i>${t('storedLocally')}</span>`
-				: `<span class="badge bg-primary"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
+				? `<span class="badge bg-warning text-dark ms-auto flex-shrink-0"><i class="bi bi-hdd me-1"></i>${t('storedLocally')}</span>`
+				: `<span class="badge bg-primary ms-auto flex-shrink-0"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
 
 			// Format dates
 			const createdDate = new Date(note.created_at).toLocaleDateString();
@@ -798,8 +798,8 @@ function QuickNotesApp() {
 
 			noteElement.innerHTML = `
 				<div class="card-body">
-					<div class="d-flex justify-content-between align-items-start mb-2">
-						<h5 class="card-title mb-0">${note.title}</h5>
+					<div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+						<h5 class="card-title mb-0 text-break" style="flex: 1; min-width: 0;">${note.title}</h5>
 						${storageBadge}
 					</div>
 					<h6 class="card-subtitle">
