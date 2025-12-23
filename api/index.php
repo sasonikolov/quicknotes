@@ -331,6 +331,36 @@ if ($action === 'check_login') {
 	exit;
 }
 
+// --- change_password ---
+if ($action === 'change_password') {
+	$newPassword = isset($_REQUEST['new_password']) ? trim($_REQUEST['new_password']) : '';
+
+	if (empty($newPassword)) {
+		echo json_encode(['success' => false, 'message' => 'New password required.']);
+		exit;
+	}
+
+	$passwordError = validatePassword($newPassword);
+	if ($passwordError) {
+		echo json_encode(['success' => false, 'message' => $passwordError]);
+		exit;
+	}
+
+	// Generate new recovery code
+	$newRecoveryCode = generateRecoveryCode();
+
+	$userData['user']['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
+	$userData['user']['recovery_code'] = password_hash($newRecoveryCode, PASSWORD_DEFAULT);
+	saveUserData($login, $userData);
+
+	echo json_encode([
+		'success' => true,
+		'message' => 'Password changed successfully!',
+		'recovery_code' => $newRecoveryCode
+	]);
+	exit;
+}
+
 if (!isset($_REQUEST['data'])) {
 	echo json_encode(['success' => false, 'message' => 'No data specified.']);
 	exit;

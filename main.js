@@ -439,6 +439,13 @@ function QuickNotesApp() {
 		newNoteBtn.addEventListener('click', () => displayNoteForm());
 		div_buttons.appendChild(newNoteBtn);
 
+		const changePassBtn = document.createElement('button');
+		changePassBtn.className = 'btn btn-outline-primary';
+		changePassBtn.innerHTML = '<i class="bi bi-key me-1"></i>';
+		changePassBtn.title = 'Change Password';
+		changePassBtn.addEventListener('click', () => displayChangePasswordModal());
+		div_buttons.appendChild(changePassBtn);
+
 		const logoutBtn = document.createElement('button');
 		logoutBtn.className = 'btn btn-secondary';
 		logoutBtn.innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>Logout';
@@ -446,6 +453,81 @@ function QuickNotesApp() {
 		div_buttons.appendChild(logoutBtn);
 
 		return div_buttons;
+	}
+
+	function displayChangePasswordModal() {
+		const content = `
+			<div class="text-center mb-3">
+				<i class="bi bi-key-fill" style="font-size: 2.5rem; color: var(--accent);"></i>
+				<p class="mt-2">Enter your new password</p>
+			</div>
+			<div class="form-group">
+				<label for="currentPassword"><i class="bi bi-lock me-1"></i>Current Password</label>
+				<input type="password" class="form-control" id="currentPassword" placeholder="Your current password">
+			</div>
+			<div class="form-group">
+				<label for="newPassword"><i class="bi bi-key me-1"></i>New Password</label>
+				<input type="password" class="form-control" id="newPassword" placeholder="Min. 6 characters">
+			</div>
+			<div class="form-group">
+				<label for="confirmNewPassword"><i class="bi bi-key-fill me-1"></i>Confirm New Password</label>
+				<input type="password" class="form-control" id="confirmNewPassword" placeholder="Repeat new password">
+			</div>
+			<button id="changePasswordBtn" class="btn btn-primary w-100">
+				<i class="bi bi-check-lg me-2"></i>Change Password
+			</button>
+			<div class="text-center mt-3">
+				<a href="#" id="cancelChangePass" class="text-muted">Cancel</a>
+			</div>
+		`;
+
+		showModal('Change Password', content);
+
+		setTimeout(() => {
+			const currentPwInput = document.getElementById('currentPassword');
+			const newPwInput = document.getElementById('newPassword');
+			const confirmPwInput = document.getElementById('confirmNewPassword');
+			const changeBtn = document.getElementById('changePasswordBtn');
+			const cancelBtn = document.getElementById('cancelChangePass');
+
+			changeBtn.addEventListener('click', () => {
+				const currentPw = currentPwInput.value;
+				const newPw = newPwInput.value;
+				const confirmPw = confirmPwInput.value;
+
+				if (!currentPw) {
+					alert('Please enter your current password.');
+					return;
+				}
+				if (currentPw !== SECRET_KEY) {
+					alert('Current password is incorrect.');
+					return;
+				}
+				if (newPw.length < 6) {
+					alert('New password must be at least 6 characters.');
+					return;
+				}
+				if (newPw !== confirmPw) {
+					alert('New passwords do not match.');
+					return;
+				}
+
+				callApi('change_password', { new_password: newPw }, function(res) {
+					SECRET_KEY = newPw;
+					closeModal(() => {
+						showInformation('Password changed!', 'success');
+						displayRecoveryCodeModal(res.recovery_code);
+					});
+				});
+			});
+
+			cancelBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				closeModal();
+			});
+
+			currentPwInput.focus();
+		}, 300);
 	}
 
 	function displayNotes() {
