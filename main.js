@@ -5,8 +5,108 @@ function QuickNotesApp() {
 	let GLOBAL_CODE = '';
 	let requireGlobalCode = true;
 	let div_app = null;
+	let STORAGE_MODE = 'server'; // 'server' or 'local'
+	const LOCAL_STORAGE_KEY = 'quicknotes_local';
+	const LOCAL_WARNING_SHOWN_KEY = 'quicknotes_warning_shown';
 
 	this.notes = [];
+
+	// ============ LocalStorage Functions ============
+
+	function getLocalNotes() {
+		try {
+			const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+			return data ? JSON.parse(data) : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
+	function saveLocalNotes(notes) {
+		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(notes));
+	}
+
+	function localAddNote(title, content) {
+		const notes = getLocalNotes();
+		const note = {
+			id: 'local_' + Date.now(),
+			title: title,
+			content: content,
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString()
+		};
+		notes.push(note);
+		saveLocalNotes(notes);
+		return note;
+	}
+
+	function localUpdateNote(id, title, content) {
+		const notes = getLocalNotes();
+		const index = notes.findIndex(n => n.id === id);
+		if (index !== -1) {
+			notes[index].title = title;
+			notes[index].content = content;
+			notes[index].updated_at = new Date().toISOString();
+			saveLocalNotes(notes);
+			return true;
+		}
+		return false;
+	}
+
+	function localDeleteNote(id) {
+		const notes = getLocalNotes();
+		const filtered = notes.filter(n => n.id !== id);
+		saveLocalNotes(filtered);
+		return filtered.length !== notes.length;
+	}
+
+	function startLocalMode() {
+		const warningShown = localStorage.getItem(LOCAL_WARNING_SHOWN_KEY);
+		if (!warningShown) {
+			showLocalWarningModal(() => {
+				localStorage.setItem(LOCAL_WARNING_SHOWN_KEY, 'true');
+				activateLocalMode();
+			});
+		} else {
+			activateLocalMode();
+		}
+	}
+
+	function activateLocalMode() {
+		STORAGE_MODE = 'local';
+		SECRET_USER = 'local';
+		this.notes = getLocalNotes();
+		displayNotes();
+	}
+
+	function showLocalWarningModal(onAccept) {
+		const content = `
+			<div class="text-center">
+				<i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: #f59e0b;"></i>
+				<h5 class="mt-3">${t('localStorageWarningTitle')}</h5>
+				<p class="text-muted">${t('localStorageWarning')}</p>
+				<button id="acceptLocalWarning" class="btn btn-warning w-100 mt-3">
+					<i class="bi bi-check-lg me-2"></i>${t('understand')}
+				</button>
+				<div class="text-center mt-3">
+					<a href="#" id="cancelLocalMode" class="text-muted">${t('cancel')}</a>
+				</div>
+			</div>
+		`;
+
+		showModal(t('localStorageWarningTitle'), content);
+
+		setTimeout(() => {
+			document.getElementById('acceptLocalWarning').addEventListener('click', () => {
+				closeModal();
+				if (onAccept) onAccept();
+			});
+			document.getElementById('cancelLocalMode').addEventListener('click', (e) => {
+				e.preventDefault();
+				closeModal();
+			});
+		}, 300);
+	}
 
 	// ============ API Helper ============
 
@@ -175,6 +275,11 @@ function QuickNotesApp() {
 				<button id='continueBtn' class="btn btn-primary w-100">
 					<i class="bi bi-arrow-right me-2"></i>${t('continue')}
 				</button>
+				<div class="text-center mt-3">
+					<a href="#" id="offlineModeBtn" class="text-muted">
+						<i class="bi bi-cloud-slash me-1"></i>${t('useOffline')}
+					</a>
+				</div>
 			</div>
 		`;
 		setContent(loginDiv, false);
@@ -182,6 +287,7 @@ function QuickNotesApp() {
 		const loginInput = document.getElementById('login');
 		const globalCodeInput = document.getElementById('globalCode');
 		const continueBtn = document.getElementById('continueBtn');
+		const offlineModeBtn = document.getElementById('offlineModeBtn');
 
 		continueBtn.addEventListener('click', () => {
 			const login = loginInput.value.trim();
@@ -199,6 +305,11 @@ function QuickNotesApp() {
 
 		globalCodeInput.addEventListener('keypress', (e) => {
 			if (e.key === 'Enter') continueBtn.click();
+		});
+
+		offlineModeBtn.addEventListener('click', (e) => {
+			e.preventDefault();
+			startLocalMode();
 		});
 	}
 
@@ -417,13 +528,41 @@ function QuickNotesApp() {
 	// ============ Notes Functions ============
 
 	function loadNotes() {
-		callApi('get_notes', { data: {} }, function(data) {
-			this.notes = data.notes;
+		if (STORAGE_MODE === 'local') {
+			this.notes = getLocalNotes();
 			displayNotes();
-		}.bind(this));
+		} else {
+			callApi('get_notes', { data: {} }, function(data) {
+				this.notes = data.notes;
+				displayNotes();
+			}.bind(this));
+		}
 	}
 
 	function getGlobalButtons() {
+		const container = document.createElement('div');
+
+		// Offline badge
+		if (STORAGE_MODE === 'local') {
+			const badge = document.createElement('div');
+			badge.className = 'alert alert-warning py-2 px-3 mb-3 d-flex align-items-center justify-content-between';
+			badge.innerHTML = `
+				<span><i class="bi bi-cloud-slash me-2"></i>${t('offlineBadge')}</span>
+				<a href="#" id="switchToServerBtn" class="text-dark"><small>${t('switchToServer')}</small></a>
+			`;
+			container.appendChild(badge);
+			setTimeout(() => {
+				const switchBtn = document.getElementById('switchToServerBtn');
+				if (switchBtn) {
+					switchBtn.addEventListener('click', (e) => {
+						e.preventDefault();
+						STORAGE_MODE = 'server';
+						displayLogin();
+					});
+				}
+			}, 0);
+		}
+
 		const div_buttons = document.createElement('div');
 		div_buttons.className = 'btn-group';
 
@@ -439,12 +578,15 @@ function QuickNotesApp() {
 		newNoteBtn.addEventListener('click', () => displayNoteForm());
 		div_buttons.appendChild(newNoteBtn);
 
-		const changePassBtn = document.createElement('button');
-		changePassBtn.className = 'btn btn-outline-primary';
-		changePassBtn.innerHTML = '<i class="bi bi-key me-1"></i>';
-		changePassBtn.title = t('changePassword');
-		changePassBtn.addEventListener('click', () => displayChangePasswordModal());
-		div_buttons.appendChild(changePassBtn);
+		// Only show password change for server mode
+		if (STORAGE_MODE === 'server') {
+			const changePassBtn = document.createElement('button');
+			changePassBtn.className = 'btn btn-outline-primary';
+			changePassBtn.innerHTML = '<i class="bi bi-key me-1"></i>';
+			changePassBtn.title = t('changePassword');
+			changePassBtn.addEventListener('click', () => displayChangePasswordModal());
+			div_buttons.appendChild(changePassBtn);
+		}
 
 		const logoutBtn = document.createElement('button');
 		logoutBtn.className = 'btn btn-secondary';
@@ -452,7 +594,8 @@ function QuickNotesApp() {
 		logoutBtn.addEventListener('click', () => logout());
 		div_buttons.appendChild(logoutBtn);
 
-		return div_buttons;
+		container.appendChild(div_buttons);
+		return container;
 	}
 
 	function displayChangePasswordModal() {
@@ -588,10 +731,16 @@ function QuickNotesApp() {
 
 			noteElement.querySelector(`#delete_${note.id}`).addEventListener('click', () => {
 				if (confirm(t('deleteNote'))) {
-					callApi('delete_note', { data: { id: note.id } }, () => {
+					if (STORAGE_MODE === 'local') {
+						localDeleteNote(note.id);
 						showInformation(t('noteDeleted'));
 						loadNotes();
-					});
+					} else {
+						callApi('delete_note', { data: { id: note.id } }, () => {
+							showInformation(t('noteDeleted'));
+							loadNotes();
+						});
+					}
 				}
 			});
 		});
@@ -632,18 +781,28 @@ function QuickNotesApp() {
 				return;
 			}
 
-			const noteData = { title, content };
-			let action = 'add_note';
-
-			if (note?.id) {
-				noteData.id = note.id;
-				action = 'update_note';
-			}
-
-			callApi(action, { data: noteData }, () => {
+			if (STORAGE_MODE === 'local') {
+				if (note?.id) {
+					localUpdateNote(note.id, title, content);
+				} else {
+					localAddNote(title, content);
+				}
 				showInformation(t('noteSaved'));
 				loadNotes();
-			});
+			} else {
+				const noteData = { title, content };
+				let action = 'add_note';
+
+				if (note?.id) {
+					noteData.id = note.id;
+					action = 'update_note';
+				}
+
+				callApi(action, { data: noteData }, () => {
+					showInformation(t('noteSaved'));
+					loadNotes();
+				});
+			}
 		});
 	}
 

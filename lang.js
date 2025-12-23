@@ -84,7 +84,15 @@ const LANGUAGES = {
 		// Misc
 		error: 'Error',
 		serverError: 'Server error. Please try again.',
-		created: 'Created'
+		created: 'Created',
+		// Local Storage Mode
+		useOffline: 'Use Offline',
+		offlineMode: 'Offline Mode',
+		localStorageWarning: 'Your notes will be stored locally in this browser only. Data may be lost if you clear browser data or use a different device.',
+		localStorageWarningTitle: 'Local Storage Warning',
+		understand: 'I understand',
+		switchToServer: 'Switch to Server',
+		offlineBadge: 'Offline'
 	},
 
 	de: {
@@ -163,7 +171,14 @@ const LANGUAGES = {
 		updateNote: 'Aktualisieren',
 		error: 'Fehler',
 		serverError: 'Serverfehler. Bitte erneut versuchen.',
-		created: 'Erstellt'
+		created: 'Erstellt',
+		useOffline: 'Offline nutzen',
+		offlineMode: 'Offline-Modus',
+		localStorageWarning: 'Deine Notizen werden nur lokal in diesem Browser gespeichert. Daten können verloren gehen, wenn du die Browserdaten löschst oder ein anderes Gerät verwendest.',
+		localStorageWarningTitle: 'Lokale Speicherung',
+		understand: 'Verstanden',
+		switchToServer: 'Zum Server wechseln',
+		offlineBadge: 'Offline'
 	},
 
 	it: {
@@ -242,7 +257,14 @@ const LANGUAGES = {
 		updateNote: 'Aggiorna',
 		error: 'Errore',
 		serverError: 'Errore del server. Riprova.',
-		created: 'Creato'
+		created: 'Creato',
+		useOffline: 'Usa offline',
+		offlineMode: 'Modalità offline',
+		localStorageWarning: 'Le tue note saranno salvate solo localmente in questo browser. I dati potrebbero andare persi se cancelli i dati del browser o usi un altro dispositivo.',
+		localStorageWarningTitle: 'Avviso archiviazione locale',
+		understand: 'Ho capito',
+		switchToServer: 'Passa al server',
+		offlineBadge: 'Offline'
 	},
 
 	fr: {
@@ -321,7 +343,14 @@ const LANGUAGES = {
 		updateNote: 'Mettre à jour',
 		error: 'Erreur',
 		serverError: 'Erreur serveur. Veuillez réessayer.',
-		created: 'Créé'
+		created: 'Créé',
+		useOffline: 'Utiliser hors ligne',
+		offlineMode: 'Mode hors ligne',
+		localStorageWarning: 'Vos notes seront stockées localement dans ce navigateur uniquement. Les données peuvent être perdues si vous effacez les données du navigateur ou utilisez un autre appareil.',
+		localStorageWarningTitle: 'Avertissement stockage local',
+		understand: 'Je comprends',
+		switchToServer: 'Passer au serveur',
+		offlineBadge: 'Hors ligne'
 	},
 
 	pt: {
@@ -400,7 +429,14 @@ const LANGUAGES = {
 		updateNote: 'Atualizar',
 		error: 'Erro',
 		serverError: 'Erro no servidor. Tente novamente.',
-		created: 'Criado'
+		created: 'Criado',
+		useOffline: 'Usar offline',
+		offlineMode: 'Modo offline',
+		localStorageWarning: 'Suas notas serão armazenadas localmente apenas neste navegador. Os dados podem ser perdidos se você limpar os dados do navegador ou usar outro dispositivo.',
+		localStorageWarningTitle: 'Aviso de armazenamento local',
+		understand: 'Entendi',
+		switchToServer: 'Mudar para servidor',
+		offlineBadge: 'Offline'
 	},
 
 	ja: {
@@ -479,7 +515,14 @@ const LANGUAGES = {
 		updateNote: '更新',
 		error: 'エラー',
 		serverError: 'サーバーエラー。もう一度お試しください。',
-		created: '作成日'
+		created: '作成日',
+		useOffline: 'オフラインで使用',
+		offlineMode: 'オフラインモード',
+		localStorageWarning: 'メモはこのブラウザにのみローカル保存されます。ブラウザデータを消去したり、別のデバイスを使用すると、データが失われる可能性があります。',
+		localStorageWarningTitle: 'ローカルストレージの警告',
+		understand: '理解しました',
+		switchToServer: 'サーバーに切り替え',
+		offlineBadge: 'オフライン'
 	},
 
 	th: {
@@ -558,7 +601,14 @@ const LANGUAGES = {
 		updateNote: 'อัปเดต',
 		error: 'ข้อผิดพลาด',
 		serverError: 'ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองใหม่',
-		created: 'สร้างเมื่อ'
+		created: 'สร้างเมื่อ',
+		useOffline: 'ใช้แบบออฟไลน์',
+		offlineMode: 'โหมดออฟไลน์',
+		localStorageWarning: 'บันทึกของคุณจะถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น ข้อมูลอาจสูญหายหากคุณล้างข้อมูลเบราว์เซอร์หรือใช้อุปกรณ์อื่น',
+		localStorageWarningTitle: 'คำเตือนการจัดเก็บในเครื่อง',
+		understand: 'เข้าใจแล้ว',
+		switchToServer: 'เปลี่ยนไปใช้เซิร์ฟเวอร์',
+		offlineBadge: 'ออฟไลน์'
 	},
 
 	zh: {
@@ -637,7 +687,14 @@ const LANGUAGES = {
 		updateNote: '更新',
 		error: '错误',
 		serverError: '服务器错误，请重试。',
-		created: '创建于'
+		created: '创建于',
+		useOffline: '离线使用',
+		offlineMode: '离线模式',
+		localStorageWarning: '您的笔记将仅存储在此浏览器本地。如果您清除浏览器数据或使用其他设备，数据可能会丢失。',
+		localStorageWarningTitle: '本地存储警告',
+		understand: '我明白了',
+		switchToServer: '切换到服务器',
+		offlineBadge: '离线'
 	}
 };
 
