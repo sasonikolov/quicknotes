@@ -9,6 +9,13 @@ function QuickNotesApp() {
 	const LOCAL_STORAGE_KEY = 'quicknotes_local';
 	const LOCAL_WARNING_SHOWN_KEY = 'quicknotes_warning_shown';
 
+	// Config from server
+	let APP_CONFIG = {
+		enable_pwa: true,
+		enable_offline_mode: true,
+		require_global_code: true
+	};
+
 	this.notes = [];
 
 	// ============ LocalStorage Functions ============
@@ -275,11 +282,13 @@ function QuickNotesApp() {
 				<button id='continueBtn' class="btn btn-primary w-100">
 					<i class="bi bi-arrow-right me-2"></i>${t('continue')}
 				</button>
+				${APP_CONFIG.enable_offline_mode ? `
 				<div class="text-center mt-3">
 					<a href="#" id="offlineModeBtn" class="text-muted">
 						<i class="bi bi-cloud-slash me-1"></i>${t('useOffline')}
 					</a>
 				</div>
+				` : ''}
 			</div>
 		`;
 		setContent(loginDiv, false);
@@ -287,7 +296,7 @@ function QuickNotesApp() {
 		const loginInput = document.getElementById('login');
 		const globalCodeInput = document.getElementById('globalCode');
 		const continueBtn = document.getElementById('continueBtn');
-		const offlineModeBtn = document.getElementById('offlineModeBtn');
+		const offlineModeBtn = APP_CONFIG.enable_offline_mode ? document.getElementById('offlineModeBtn') : null;
 
 		continueBtn.addEventListener('click', () => {
 			const login = loginInput.value.trim();
@@ -307,10 +316,12 @@ function QuickNotesApp() {
 			if (e.key === 'Enter') continueBtn.click();
 		});
 
-		offlineModeBtn.addEventListener('click', (e) => {
-			e.preventDefault();
-			startLocalMode();
-		});
+		if (offlineModeBtn) {
+			offlineModeBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				startLocalMode();
+			});
+		}
 	}
 
 	function displayPasswordInput(showForgotLink = true) {
@@ -808,10 +819,42 @@ function QuickNotesApp() {
 
 	// ============ Init ============
 
+	function loadConfig(callback) {
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', api_url, true);
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				try {
+					const res = JSON.parse(xhr.responseText);
+					if (res.success && res.config) {
+						APP_CONFIG = res.config;
+					}
+				} catch (e) {
+					console.log('Config load failed, using defaults');
+				}
+				callback();
+			}
+		};
+		xhr.send('action=get_config');
+	}
+
+	function registerServiceWorker() {
+		if (APP_CONFIG.enable_pwa && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('./sw.js')
+				.then((reg) => console.log('Service Worker registered:', reg.scope))
+				.catch((err) => console.log('Service Worker registration failed:', err));
+		}
+	}
+
 	function init() {
 		console.log('QuickNotesApp initialized');
 		div_app = document.getElementById('app');
-		displayLogin();
+
+		loadConfig(() => {
+			registerServiceWorker();
+			displayLogin();
+		});
 	}
 
 	init();

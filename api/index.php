@@ -192,6 +192,19 @@ if (!empty($login) && !empty($config['blocked_usernames']) && in_array($login, $
 	exit;
 }
 
+// --- get_config: Get public config values ---
+if ($action === 'get_config') {
+	echo json_encode([
+		'success' => true,
+		'config' => [
+			'enable_pwa' => $config['enable_pwa'] ?? true,
+			'enable_offline_mode' => $config['enable_offline_mode'] ?? true,
+			'require_global_code' => $config['require_global_code'] ?? true
+		]
+	]);
+	exit;
+}
+
 // --- check_user: Check if user exists and has password ---
 if ($action === 'check_user') {
 	if (empty($login)) {
