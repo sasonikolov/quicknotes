@@ -117,6 +117,33 @@ function generateRecoveryCode() {
 	return strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
 }
 
+function validatePassword($password) {
+	$config = getConfig();
+	$errors = [];
+
+	if (strlen($password) < $config['min_password_length']) {
+		$errors[] = 'at least ' . $config['min_password_length'] . ' characters';
+	}
+
+	if (!empty($config['password_require_uppercase']) && !preg_match('/[A-Z]/', $password)) {
+		$errors[] = 'one uppercase letter';
+	}
+
+	if (!empty($config['password_require_lowercase']) && !preg_match('/[a-z]/', $password)) {
+		$errors[] = 'one lowercase letter';
+	}
+
+	if (!empty($config['password_require_number']) && !preg_match('/[0-9]/', $password)) {
+		$errors[] = 'one number';
+	}
+
+	if (!empty($errors)) {
+		return 'Password must contain: ' . implode(', ', $errors) . '.';
+	}
+
+	return null; // Valid
+}
+
 function generateGlobalCode() {
 	$config = getConfig();
 	$pattern = $config['global_code_pattern'];
@@ -200,11 +227,9 @@ if ($action === 'set_password') {
 
 	$password = isset($_REQUEST['secret']) ? trim($_REQUEST['secret']) : '';
 
-	if (strlen($password) < $config['min_password_length']) {
-		echo json_encode([
-			'success' => false,
-			'message' => 'Password must be at least ' . $config['min_password_length'] . ' characters.'
-		]);
+	$passwordError = validatePassword($password);
+	if ($passwordError) {
+		echo json_encode(['success' => false, 'message' => $passwordError]);
 		exit;
 	}
 
@@ -248,11 +273,9 @@ if ($action === 'recover_password') {
 		exit;
 	}
 
-	if (strlen($newPassword) < $config['min_password_length']) {
-		echo json_encode([
-			'success' => false,
-			'message' => 'Password must be at least ' . $config['min_password_length'] . ' characters.'
-		]);
+	$passwordError = validatePassword($newPassword);
+	if ($passwordError) {
+		echo json_encode(['success' => false, 'message' => $passwordError]);
 		exit;
 	}
 
