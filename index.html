@@ -8,7 +8,9 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-	<script src='main.js'></script>
+	<script>const APP_VERSION = '1.0.0';</script>
+	<script src='lang.js?v=1.0.0'></script>
+	<script src='main.js?v=1.0.0'></script>
 	<style>
 		:root {
 			--bg-primary: #f8fafc;
@@ -66,6 +68,59 @@
 			-webkit-text-fill-color: transparent;
 			background-clip: text;
 			margin: 0;
+		}
+
+		.header-controls {
+			display: flex;
+			gap: 0.75rem;
+			align-items: center;
+		}
+
+		.dropdown {
+			position: relative;
+		}
+
+		.dropdown-menu {
+			position: absolute;
+			top: 100%;
+			right: 0;
+			margin-top: 0.5rem;
+			background: var(--bg-secondary);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			box-shadow: var(--shadow-lg);
+			min-width: 150px;
+			display: none;
+			z-index: 1000;
+			overflow: hidden;
+		}
+
+		.dropdown-menu.show {
+			display: block;
+			animation: fadeIn 0.2s ease;
+		}
+
+		.dropdown-item {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.75rem 1rem;
+			color: var(--text-primary);
+			cursor: pointer;
+			border: none;
+			background: none;
+			width: 100%;
+			text-align: left;
+			font-size: 0.95rem;
+		}
+
+		.dropdown-item:hover {
+			background: var(--border);
+		}
+
+		.dropdown-item.active {
+			background: var(--accent);
+			color: white;
 		}
 
 		.theme-toggle {
@@ -407,9 +462,17 @@ function hideSpinner() {
 	<div class="app-container">
 		<header class="app-header">
 			<h1 class="app-title">Quick Notes</h1>
-			<button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
-				<i class="bi bi-moon-fill" id="themeIcon"></i>
-			</button>
+			<div class="header-controls">
+				<div class="dropdown" id="langDropdown">
+					<button class="theme-toggle" id="langToggle" title="Language">
+						<span id="currentLangFlag"></span>
+					</button>
+					<div class="dropdown-menu" id="langMenu"></div>
+				</div>
+				<button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">
+					<i class="bi bi-moon-fill" id="themeIcon"></i>
+				</button>
+			</div>
 		</header>
 		<div id='app'></div>
 	</div>
@@ -436,6 +499,45 @@ function hideSpinner() {
 				themeIcon.className = 'bi bi-sun-fill';
 			}
 		});
+
+		// Language Selector
+		const langToggle = document.getElementById('langToggle');
+		const langMenu = document.getElementById('langMenu');
+		const currentLangFlag = document.getElementById('currentLangFlag');
+
+		function updateLangUI() {
+			const langs = getAvailableLanguages();
+			const current = getLanguage();
+
+			// Update flag display
+			const currentData = langs.find(l => l.code === current);
+			currentLangFlag.textContent = currentData ? currentData.flag : '🌐';
+
+			// Build menu
+			langMenu.innerHTML = '';
+			langs.forEach(lang => {
+				const item = document.createElement('button');
+				item.className = 'dropdown-item' + (lang.code === current ? ' active' : '');
+				item.innerHTML = `<span>${lang.flag}</span><span>${lang.name}</span>`;
+				item.addEventListener('click', () => {
+					setLanguage(lang.code);
+					langMenu.classList.remove('show');
+					location.reload(); // Reload to apply translations
+				});
+				langMenu.appendChild(item);
+			});
+		}
+
+		langToggle.addEventListener('click', (e) => {
+			e.stopPropagation();
+			langMenu.classList.toggle('show');
+		});
+
+		document.addEventListener('click', () => {
+			langMenu.classList.remove('show');
+		});
+
+		updateLangUI();
 	</script>
 </body>
 </html>

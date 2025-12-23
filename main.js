@@ -46,7 +46,7 @@ function QuickNotesApp() {
 					}
 				} catch (e) {
 					console.error('Invalid response:', xhr.responseText);
-					alert('Server error. Please try again.');
+					alert(t('serverError'));
 				}
 			}
 		};
@@ -161,19 +161,19 @@ function QuickNotesApp() {
 			<div class="card-body">
 				<div class="text-center mb-4">
 					<i class="bi bi-journal-bookmark-fill" style="font-size: 3rem; color: var(--accent);"></i>
-					<h3 class="mt-2">Quick Notes</h3>
-					<p class="text-muted">Enter your credentials to continue</p>
+					<h3 class="mt-2">${t('appTitle')}</h3>
+					<p class="text-muted">${t('enterCredentials')}</p>
 				</div>
 				<div class="form-group">
-					<label for='login'><i class="bi bi-person me-1"></i>Username</label>
-					<input class="form-control" type='text' id='login' name='login' placeholder="Enter your username" autocomplete="username">
+					<label for='login'><i class="bi bi-person me-1"></i>${t('username')}</label>
+					<input class="form-control" type='text' id='login' name='login' placeholder="${t('enterUsername')}" autocomplete="username">
 				</div>
 				<div class="form-group">
-					<label for='globalCode'><i class="bi bi-shield-lock me-1"></i>Access Code</label>
-					<input class="form-control" type='password' id='globalCode' placeholder="Enter access code" autocomplete="off">
+					<label for='globalCode'><i class="bi bi-shield-lock me-1"></i>${t('accessCode')}</label>
+					<input class="form-control" type='password' id='globalCode' placeholder="${t('enterAccessCode')}" autocomplete="off">
 				</div>
 				<button id='continueBtn' class="btn btn-primary w-100">
-					<i class="bi bi-arrow-right me-2"></i>Continue
+					<i class="bi bi-arrow-right me-2"></i>${t('continue')}
 				</button>
 			</div>
 		`;
@@ -187,11 +187,11 @@ function QuickNotesApp() {
 			const login = loginInput.value.trim();
 			const globalCode = globalCodeInput.value.trim();
 			if (!login) {
-				alert('Please enter your username.');
+				alert(t('pleaseEnterUsername'));
 				return;
 			}
 			if (!globalCode) {
-				alert('Please enter the access code.');
+				alert(t('pleaseEnterAccessCode'));
 				return;
 			}
 			checkUser(login, globalCode);
@@ -209,19 +209,19 @@ function QuickNotesApp() {
 			<div class="card-body">
 				<div class="text-center mb-4">
 					<i class="bi bi-shield-lock" style="font-size: 3rem; color: var(--accent);"></i>
-					<h3 class="mt-2">Welcome, ${SECRET_USER}</h3>
-					<p class="text-muted">Enter your password</p>
+					<h3 class="mt-2">${t('welcome')}, ${SECRET_USER}</h3>
+					<p class="text-muted">${t('enterPassword')}</p>
 				</div>
 				<div class="form-group">
-					<label for='secret'><i class="bi bi-key me-1"></i>Password</label>
-					<input class="form-control" type='password' id='secret' placeholder="Enter your password" autocomplete="current-password">
+					<label for='secret'><i class="bi bi-key me-1"></i>${t('password')}</label>
+					<input class="form-control" type='password' id='secret' placeholder="${t('enterPassword')}" autocomplete="current-password">
 				</div>
 				<button id='signInBtn' class="btn btn-primary w-100 mb-3">
-					<i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+					<i class="bi bi-box-arrow-in-right me-2"></i>${t('signIn')}
 				</button>
 				<div class="d-flex justify-content-between">
-					<a href="#" id="backBtn" class="text-muted"><i class="bi bi-arrow-left me-1"></i>Back</a>
-					${showForgotLink ? '<a href="#" id="forgotBtn" class="text-muted">Forgot password?</a>' : ''}
+					<a href="#" id="backBtn" class="text-muted"><i class="bi bi-arrow-left me-1"></i>${t('back')}</a>
+					${showForgotLink ? '<a href="#" id="forgotBtn" class="text-muted">' + t('forgotPassword') + '</a>' : ''}
 				</div>
 			</div>
 		`;
@@ -235,7 +235,7 @@ function QuickNotesApp() {
 		signInBtn.addEventListener('click', () => {
 			const password = secretInput.value;
 			if (!password) {
-				alert('Please enter your password.');
+				alert(t('pleaseEnterPassword'));
 				return;
 			}
 			SECRET_KEY = password;
@@ -268,25 +268,25 @@ function QuickNotesApp() {
 		const content = `
 			<div class="text-center mb-3">
 				<i class="bi bi-person-plus" style="font-size: 2.5rem; color: var(--accent);"></i>
-				<p class="mt-2">Welcome <strong>${SECRET_USER}</strong>! Create a password to secure your notes.</p>
+				<p class="mt-2">${t('welcomeNewUser', { user: SECRET_USER })}</p>
 			</div>
 			<div class="form-group">
-				<label for="newPassword"><i class="bi bi-key me-1"></i>Password</label>
-				<input type="password" class="form-control" id="newPassword" placeholder="Min. 6 characters">
+				<label for="newPassword"><i class="bi bi-key me-1"></i>${t('password')}</label>
+				<input type="password" class="form-control" id="newPassword" placeholder="${t('minChars')}">
 			</div>
 			<div class="form-group">
-				<label for="confirmPassword"><i class="bi bi-key-fill me-1"></i>Confirm Password</label>
-				<input type="password" class="form-control" id="confirmPassword" placeholder="Repeat password">
+				<label for="confirmPassword"><i class="bi bi-key-fill me-1"></i>${t('confirmPassword')}</label>
+				<input type="password" class="form-control" id="confirmPassword" placeholder="${t('repeatPassword')}">
 			</div>
 			<button id="setPasswordBtn" class="btn btn-primary w-100">
-				<i class="bi bi-check-lg me-2"></i>Create Account
+				<i class="bi bi-check-lg me-2"></i>${t('createAccountBtn')}
 			</button>
 			<div class="text-center mt-3">
-				<a href="#" id="cancelSetPw" class="text-muted">Cancel</a>
+				<a href="#" id="cancelSetPw" class="text-muted">${t('cancel')}</a>
 			</div>
 		`;
 
-		showModal('Create Your Account', content);
+		showModal(t('createAccount'), content);
 
 		setTimeout(() => {
 			const newPwInput = document.getElementById('newPassword');
@@ -299,11 +299,11 @@ function QuickNotesApp() {
 				const confirmPw = confirmPwInput.value;
 
 				if (newPw.length < 6) {
-					alert('Password must be at least 6 characters.');
+					alert(t('passwordTooShort'));
 					return;
 				}
 				if (newPw !== confirmPw) {
-					alert('Passwords do not match.');
+					alert(t('passwordsDontMatch'));
 					return;
 				}
 
@@ -330,19 +330,19 @@ function QuickNotesApp() {
 		const content = `
 			<div class="text-center">
 				<i class="bi bi-shield-check" style="font-size: 3rem; color: #10b981;"></i>
-				<h5 class="mt-3">Account Created!</h5>
-				<p class="text-muted">Save this recovery code. You'll need it if you forget your password.</p>
+				<h5 class="mt-3">${t('accountCreated')}</h5>
+				<p class="text-muted">${t('saveRecoveryCode')}</p>
 				<div class="recovery-code-box">
 					<code style="font-size: 1.5rem; letter-spacing: 2px; color: var(--accent);">${code}</code>
 				</div>
-				<p class="text-muted mt-3"><small><i class="bi bi-exclamation-triangle me-1"></i>This code will only be shown once!</small></p>
+				<p class="text-muted mt-3"><small><i class="bi bi-exclamation-triangle me-1"></i>${t('codeOnlyOnce')}</small></p>
 				<button id="continueAfterRecovery" class="btn btn-primary w-100 mt-3">
-					<i class="bi bi-check-lg me-2"></i>I've saved my code
+					<i class="bi bi-check-lg me-2"></i>${t('savedMyCode')}
 				</button>
 			</div>
 		`;
 
-		showModal('Recovery Code', content);
+		showModal(t('recoveryCodeTitle'), content);
 
 		setTimeout(() => {
 			document.getElementById('continueAfterRecovery').addEventListener('click', () => {
@@ -356,25 +356,25 @@ function QuickNotesApp() {
 		const content = `
 			<div class="text-center mb-3">
 				<i class="bi bi-arrow-counterclockwise" style="font-size: 2.5rem; color: var(--accent);"></i>
-				<p class="mt-2">Enter your recovery code to reset your password.</p>
+				<p class="mt-2">${t('enterRecoveryCode')}</p>
 			</div>
 			<div class="form-group">
-				<label for="recoveryCode"><i class="bi bi-shield me-1"></i>Recovery Code</label>
-				<input type="text" class="form-control" id="recoveryCode" placeholder="8-character code" style="text-transform: uppercase; letter-spacing: 2px;">
+				<label for="recoveryCode"><i class="bi bi-shield me-1"></i>${t('recoveryCode')}</label>
+				<input type="text" class="form-control" id="recoveryCode" placeholder="${t('charCode')}" style="text-transform: uppercase; letter-spacing: 2px;">
 			</div>
 			<div class="form-group">
-				<label for="newRecoveryPassword"><i class="bi bi-key me-1"></i>New Password</label>
-				<input type="password" class="form-control" id="newRecoveryPassword" placeholder="Min. 6 characters">
+				<label for="newRecoveryPassword"><i class="bi bi-key me-1"></i>${t('newPassword')}</label>
+				<input type="password" class="form-control" id="newRecoveryPassword" placeholder="${t('minChars')}">
 			</div>
 			<button id="resetPasswordBtn" class="btn btn-primary w-100">
-				<i class="bi bi-check-lg me-2"></i>Reset Password
+				<i class="bi bi-check-lg me-2"></i>${t('resetPasswordBtn')}
 			</button>
 			<div class="text-center mt-3">
-				<a href="#" id="cancelRecovery" class="text-muted">Cancel</a>
+				<a href="#" id="cancelRecovery" class="text-muted">${t('cancel')}</a>
 			</div>
 		`;
 
-		showModal('Reset Password', content);
+		showModal(t('resetPassword'), content);
 
 		setTimeout(() => {
 			const codeInput = document.getElementById('recoveryCode');
@@ -387,18 +387,18 @@ function QuickNotesApp() {
 				const newPw = newPwInput.value;
 
 				if (code.length !== 8) {
-					alert('Recovery code must be 8 characters.');
+					alert(t('recoveryCodeLength'));
 					return;
 				}
 				if (newPw.length < 6) {
-					alert('Password must be at least 6 characters.');
+					alert(t('passwordTooShort'));
 					return;
 				}
 
 				SECRET_KEY = newPw;
 				callApi('recover_password', { recovery_code: code }, function(res) {
 					closeModal(() => {
-						showInformation('Password reset successfully!', 'success');
+						showInformation(t('passwordResetSuccess'), 'success');
 						displayRecoveryCodeModal(res.recovery_code);
 					});
 				});
@@ -429,26 +429,26 @@ function QuickNotesApp() {
 
 		const showNotesBtn = document.createElement('button');
 		showNotesBtn.className = 'btn btn-primary';
-		showNotesBtn.innerHTML = '<i class="bi bi-journal-text me-2"></i>Notes';
+		showNotesBtn.innerHTML = '<i class="bi bi-journal-text me-2"></i>' + t('notes');
 		showNotesBtn.addEventListener('click', () => loadNotes());
 		div_buttons.appendChild(showNotesBtn);
 
 		const newNoteBtn = document.createElement('button');
 		newNoteBtn.className = 'btn btn-success';
-		newNoteBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>New';
+		newNoteBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>' + t('new');
 		newNoteBtn.addEventListener('click', () => displayNoteForm());
 		div_buttons.appendChild(newNoteBtn);
 
 		const changePassBtn = document.createElement('button');
 		changePassBtn.className = 'btn btn-outline-primary';
 		changePassBtn.innerHTML = '<i class="bi bi-key me-1"></i>';
-		changePassBtn.title = 'Change Password';
+		changePassBtn.title = t('changePassword');
 		changePassBtn.addEventListener('click', () => displayChangePasswordModal());
 		div_buttons.appendChild(changePassBtn);
 
 		const logoutBtn = document.createElement('button');
 		logoutBtn.className = 'btn btn-secondary';
-		logoutBtn.innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>Logout';
+		logoutBtn.innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>' + t('logout');
 		logoutBtn.addEventListener('click', () => logout());
 		div_buttons.appendChild(logoutBtn);
 
@@ -459,29 +459,29 @@ function QuickNotesApp() {
 		const content = `
 			<div class="text-center mb-3">
 				<i class="bi bi-key-fill" style="font-size: 2.5rem; color: var(--accent);"></i>
-				<p class="mt-2">Enter your new password</p>
+				<p class="mt-2">${t('enterNewPassword')}</p>
 			</div>
 			<div class="form-group">
-				<label for="currentPassword"><i class="bi bi-lock me-1"></i>Current Password</label>
-				<input type="password" class="form-control" id="currentPassword" placeholder="Your current password">
+				<label for="currentPassword"><i class="bi bi-lock me-1"></i>${t('currentPassword')}</label>
+				<input type="password" class="form-control" id="currentPassword" placeholder="${t('yourCurrentPassword')}">
 			</div>
 			<div class="form-group">
-				<label for="newPassword"><i class="bi bi-key me-1"></i>New Password</label>
-				<input type="password" class="form-control" id="newPassword" placeholder="Min. 6 characters">
+				<label for="newPassword"><i class="bi bi-key me-1"></i>${t('newPassword')}</label>
+				<input type="password" class="form-control" id="newPassword" placeholder="${t('minChars')}">
 			</div>
 			<div class="form-group">
-				<label for="confirmNewPassword"><i class="bi bi-key-fill me-1"></i>Confirm New Password</label>
-				<input type="password" class="form-control" id="confirmNewPassword" placeholder="Repeat new password">
+				<label for="confirmNewPassword"><i class="bi bi-key-fill me-1"></i>${t('confirmNewPassword')}</label>
+				<input type="password" class="form-control" id="confirmNewPassword" placeholder="${t('repeatNewPassword')}">
 			</div>
 			<button id="changePasswordBtn" class="btn btn-primary w-100">
-				<i class="bi bi-check-lg me-2"></i>Change Password
+				<i class="bi bi-check-lg me-2"></i>${t('changePasswordBtn')}
 			</button>
 			<div class="text-center mt-3">
-				<a href="#" id="cancelChangePass" class="text-muted">Cancel</a>
+				<a href="#" id="cancelChangePass" class="text-muted">${t('cancel')}</a>
 			</div>
 		`;
 
-		showModal('Change Password', content);
+		showModal(t('changePassword'), content);
 
 		setTimeout(() => {
 			const currentPwInput = document.getElementById('currentPassword');
@@ -496,30 +496,30 @@ function QuickNotesApp() {
 				const confirmPw = confirmPwInput.value;
 
 				if (!currentPw) {
-					alert('Please enter your current password.');
+					alert(t('pleaseEnterCurrentPassword'));
 					return;
 				}
 				if (currentPw !== SECRET_KEY) {
-					alert('Current password is incorrect.');
+					alert(t('currentPasswordIncorrect'));
 					return;
 				}
 				if (newPw === currentPw) {
-					alert('New password must be different from current password.');
+					alert(t('passwordMustBeDifferent'));
 					return;
 				}
 				if (newPw.length < 6) {
-					alert('New password must be at least 6 characters.');
+					alert(t('passwordMinLength'));
 					return;
 				}
 				if (newPw !== confirmPw) {
-					alert('New passwords do not match.');
+					alert(t('passwordsNoMatch'));
 					return;
 				}
 
 				callApi('change_password', { new_password: newPw }, function(res) {
 					SECRET_KEY = newPw;
 					closeModal(() => {
-						showInformation('Password changed!', 'success');
+						showInformation(t('passwordChanged'), 'success');
 						displayRecoveryCodeModal(res.recovery_code);
 					});
 				});
@@ -541,8 +541,8 @@ function QuickNotesApp() {
 			notesDiv.innerHTML = `
 				<div class="empty-state">
 					<i class="bi bi-journal-x"></i>
-					<h4>No notes yet</h4>
-					<p>Create your first note to get started!</p>
+					<h4>${t('noNotesYet')}</h4>
+					<p>${t('createFirstNote')}</p>
 				</div>
 			`;
 			setContent(notesDiv);
@@ -556,12 +556,12 @@ function QuickNotesApp() {
 				<div class="card-body">
 					<h5 class="card-title">${note.title}</h5>
 					<h6 class="card-subtitle">
-						<i class="bi bi-clock me-1"></i>${new Date(note.created_at).toLocaleString()}
+						<i class="bi bi-clock me-1"></i>${t('created')}: ${new Date(note.created_at).toLocaleString()}
 					</h6>
 					<div class="note-actions">
-						<button class="btn btn-info btn-sm" id="view_${note.id}"><i class="bi bi-chevron-down me-1" id="viewIcon_${note.id}"></i>View</button>
-						<button class="btn btn-warning btn-sm" id="edit_${note.id}"><i class="bi bi-pencil me-1"></i>Edit</button>
-						<button class="btn btn-danger btn-sm" id="delete_${note.id}"><i class="bi bi-trash me-1"></i>Delete</button>
+						<button class="btn btn-info btn-sm" id="view_${note.id}"><i class="bi bi-chevron-down me-1" id="viewIcon_${note.id}"></i>${t('view')}</button>
+						<button class="btn btn-warning btn-sm" id="edit_${note.id}"><i class="bi bi-pencil me-1"></i>${t('edit')}</button>
+						<button class="btn btn-danger btn-sm" id="delete_${note.id}"><i class="bi bi-trash me-1"></i>${t('delete')}</button>
 					</div>
 				</div>
 				<div class="note-content-collapse" id="content_${note.id}" style="display: none;">
@@ -587,9 +587,9 @@ function QuickNotesApp() {
 			noteElement.querySelector(`#edit_${note.id}`).addEventListener('click', () => displayNoteForm(note));
 
 			noteElement.querySelector(`#delete_${note.id}`).addEventListener('click', () => {
-				if (confirm('Delete this note?')) {
+				if (confirm(t('deleteNote'))) {
 					callApi('delete_note', { data: { id: note.id } }, () => {
-						showInformation('Note deleted!');
+						showInformation(t('noteDeleted'));
 						loadNotes();
 					});
 				}
@@ -606,18 +606,18 @@ function QuickNotesApp() {
 			<div class="card-body">
 				<h2 class="card-title mb-4">
 					<i class="bi ${note ? 'bi-pencil-square' : 'bi-journal-plus'} me-2"></i>
-					${note ? 'Edit Note' : 'New Note'}
+					${note ? t('editNote') : t('newNote')}
 				</h2>
 				<div class="form-group">
-					<label for='title'><i class="bi bi-type me-1"></i>Title</label>
-					<input class="form-control" type='text' id='title' value='${note ? note.title : ''}' placeholder="Enter note title...">
+					<label for='title'><i class="bi bi-type me-1"></i>${t('title')}</label>
+					<input class="form-control" type='text' id='title' value='${note ? note.title : ''}' placeholder="${t('enterNoteTitle')}">
 				</div>
 				<div class="form-group">
-					<label for='content'><i class="bi bi-text-paragraph me-1"></i>Content</label>
-					<textarea class="form-control" id='content' rows='10' placeholder="Write your note here...">${note ? note.content : ''}</textarea>
+					<label for='content'><i class="bi bi-text-paragraph me-1"></i>${t('content')}</label>
+					<textarea class="form-control" id='content' rows='10' placeholder="${t('writeNoteHere')}">${note ? note.content : ''}</textarea>
 				</div>
 				<button id='saveNoteBtn' class="btn btn-primary">
-					<i class="bi ${note ? 'bi-check-lg' : 'bi-save'} me-2"></i>${note ? 'Update' : 'Save'} Note
+					<i class="bi ${note ? 'bi-check-lg' : 'bi-save'} me-2"></i>${note ? t('updateNote') : t('saveNote')}
 				</button>
 			</div>
 		`;
@@ -628,7 +628,7 @@ function QuickNotesApp() {
 			const content = document.getElementById('content').value;
 
 			if (!title || !content) {
-				alert('Please fill in both title and content.');
+				alert(t('fillTitleContent'));
 				return;
 			}
 
@@ -641,7 +641,7 @@ function QuickNotesApp() {
 			}
 
 			callApi(action, { data: noteData }, () => {
-				showInformation('Note saved!');
+				showInformation(t('noteSaved'));
 				loadNotes();
 			});
 		});
