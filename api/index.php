@@ -85,6 +85,13 @@ function migrateUserData($data, $login) {
 		$data['user']['login'] = strtolower(trim($login));
 	}
 
+	// Migrate notes - ensure each note has updated_at
+	foreach ($data['notes'] as &$note) {
+		if (!isset($note['updated_at'])) {
+			$note['updated_at'] = $note['created_at'] ?? date('c');
+		}
+	}
+
 	return $data;
 }
 
