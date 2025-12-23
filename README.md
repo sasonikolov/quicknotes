@@ -9,6 +9,20 @@ A powerful, privacy-focused note-taking app that works everywhere - online, offl
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)
 
+### Features at a Glance
+
+- **Hybrid Storage** - Per-note choice: server sync OR local-only (browser)
+- **Works Offline** - Full PWA with Service Worker
+- **8 Languages** - EN, DE, IT, FR, PT, JA, TH, ZH (auto-detect)
+- **Dark Mode** - One-click toggle
+- **Smart Sorting** - By name, date, or last edit
+- **IP Firewall** - Blacklist/whitelist with CIDR & wildcard support
+- **Brute Force Protection** - Exponential delays + auto-lockout
+- **API Keys** - Secure external access with domain restrictions
+- **Recovery Codes** - Password reset without email
+- **No Database** - Simple JSON file storage
+- **Self-Hosted** - Your server, your data, no cloud dependency
+
 ---
 
 ## Why Quick Notes?
