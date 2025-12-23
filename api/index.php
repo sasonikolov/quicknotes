@@ -50,18 +50,7 @@ function getUserFilePath($login) {
 	return $path . '/user_' . md5(strtolower(trim($login))) . '.json';
 }
 
-function loadUserData($login) {
-	$file = getUserFilePath($login);
-	if (file_exists($file)) {
-		$data = json_decode(file_get_contents($file), true);
-		if (is_array($data) && isset($data['user']) && isset($data['notes'])) {
-			return $data;
-		}
-	}
-	return null;
-}
-
-function createNewUser($login) {
+function getDefaultUserStructure($login) {
 	return [
 		'user' => [
 			'login' => strtolower(trim($login)),
@@ -71,6 +60,51 @@ function createNewUser($login) {
 		],
 		'notes' => []
 	];
+}
+
+function migrateUserData($data, $login) {
+	// Ensure base structure exists
+	$default = getDefaultUserStructure($login);
+
+	if (!isset($data['user']) || !is_array($data['user'])) {
+		$data['user'] = $default['user'];
+	}
+	if (!isset($data['notes']) || !is_array($data['notes'])) {
+		$data['notes'] = [];
+	}
+
+	// Migrate/repair user properties
+	foreach ($default['user'] as $key => $defaultValue) {
+		if (!array_key_exists($key, $data['user'])) {
+			$data['user'][$key] = $defaultValue;
+		}
+	}
+
+	// Ensure login is set correctly
+	if (empty($data['user']['login'])) {
+		$data['user']['login'] = strtolower(trim($login));
+	}
+
+	return $data;
+}
+
+function loadUserData($login) {
+	$file = getUserFilePath($login);
+	if (file_exists($file)) {
+		$data = json_decode(file_get_contents($file), true);
+		if (is_array($data)) {
+			// Auto-repair/migrate the data structure
+			$data = migrateUserData($data, $login);
+			// Save repaired data back
+			saveUserData($login, $data);
+			return $data;
+		}
+	}
+	return null;
+}
+
+function createNewUser($login) {
+	return getDefaultUserStructure($login);
 }
 
 function saveUserData($login, $data) {
