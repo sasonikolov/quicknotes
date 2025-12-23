@@ -1,121 +1,195 @@
 # Quick Notes
 
-A modern, secure note-taking PWA with multi-language support, offline mode, and flexible authentication.
+**Your notes. Your way. Anywhere.**
+
+A powerful, privacy-focused note-taking app that works everywhere - online, offline, or both. No account required for local use, no cloud lock-in, no tracking. Just your notes, beautifully organized.
 
 ![PHP](https://img.shields.io/badge/PHP-Backend-777BB4?logo=php&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-Frontend-F7DF1E?logo=javascript&logoColor=black)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)
 
+---
+
+## Why Quick Notes?
+
+### Work Anywhere - Even Offline
+Install as a Progressive Web App on any device. Your notes sync when you're online, but keep working when you're not. Perfect for flights, commutes, or spotty WiFi.
+
+### Your Data, Your Choice
+Every single note can be stored exactly where you want:
+- **Server Storage** - Sync across all your devices, access from anywhere
+- **Local Storage** - Keep sensitive notes private, stored only in your browser
+- **Mix & Match** - Some notes on server, some local - you decide per note
+
+### No Vendor Lock-In
+- Self-hosted on your own server
+- No subscription fees
+- No cloud dependency
+- Export your data anytime (simple JSON files)
+
+### Privacy First
+- No tracking, no analytics, no ads
+- Optional IP logging (disabled by default)
+- Your notes are encrypted at rest
+- Recovery codes instead of email verification
+
+---
+
 ## Features
 
-### Core Features
-- **User Accounts** - Each user has their own password-protected notes
-- **Dual Authentication** - Global access code + personal password
-- **Recovery Codes** - Forgot your password? Use your recovery code
-- **Dark Mode** - Toggle between light and dark themes
-- **Mobile-Friendly** - Responsive design, works great on all devices
-- **No Database Required** - Notes stored as JSON files
+### Hybrid Storage System
+The killer feature: **per-note storage selection**. In the edit form, simply check "Store locally" to keep a note in your browser only. Uncheck to sync it to the server. Move notes between storage types anytime.
 
-### Multi-Language Support
-Supports 8 languages with automatic browser detection:
-- English, Deutsch, Italiano, Francais, Portugues, Japanese, Thai, Chinese
-
-### PWA & Offline Mode
-- **Progressive Web App** - Install on mobile/desktop
-- **Offline Storage** - Store notes locally in browser
-- **Per-Note Storage** - Choose server or local storage for each note
-- **Service Worker** - Works offline when installed
-
-### Sorting & Organization
-- Sort notes by Name (A-Z, Z-A)
-- Sort by Date created (newest/oldest)
-- Sort by Last edited (newest/oldest)
-- Persistent sort preference
-
-### Security
-- **API Key Protection** - Secure external API access
-- **Domain Restrictions** - Restrict API keys to specific domains
-- **IP Logging** - Optional IP tracking for notes
-- **bcrypt Hashing** - Passwords and recovery codes securely hashed
-
-## Setup
-
-1. Deploy to a PHP-enabled web server (Apache/nginx)
-2. Ensure the `notes/` directory is writable by the web server
-3. Configure `api/config.php` (see Configuration below)
-
-## Configuration
-
-Edit `api/config.php` to customize:
-
-```php
-return [
-    // PWA Features
-    'enable_pwa' => true,              // Enable Service Worker & offline caching
-    'enable_offline_mode' => true,     // Allow local browser storage option
-
-    // Authentication
-    'require_global_code' => true,     // Require global access code + password
-    'global_code_pattern' => '{YYYY}{MM}',  // Pattern: #secret_{DD} = #secret_23
-
-    // Password Rules
-    'min_password_length' => 6,
-    'password_require_uppercase' => false,
-    'password_require_lowercase' => false,
-    'password_require_number' => false,
-
-    // User Restrictions
-    'allowed_usernames' => [],         // Empty = allow any
-    'blocked_usernames' => ['admin', 'root', 'administrator', 'test'],
-
-    // Privacy
-    'store_ip' => false,               // Store IP with notes
-
-    // API Security
-    'require_api_key' => false,        // Require API key for external access
-    'api_keys' => [
-        // 'your-api-key' => [
-        //     'name' => 'Mobile App',
-        //     'domains' => [],           // Empty = no restriction
-        //     'enabled' => true
-        // ]
-    ],
-];
+```
+[x] Store locally (browser only)
 ```
 
-### Global Code Pattern
+Perfect for:
+- Keeping passwords/sensitive data local
+- Syncing work notes across devices
+- Offline-first workflows
 
-The global access code can include date placeholders:
-- `{YYYY}` - Year (4 digits): 2025
-- `{YY}` - Year (2 digits): 25
-- `{MM}` - Month: 01-12
-- `{DD}` - Day: 01-31
+### Smart Organization
+- **Sort by Name** - A-Z or Z-A
+- **Sort by Date** - Newest or oldest first
+- **Sort by Last Edit** - Recently modified on top
+- Persistent preferences - your sort choice is remembered
 
-Example: `#secret_{YYYY}{MM}` becomes `#secret_202512` in December 2025
+### Multi-Language Interface
+Automatic browser language detection with 8 languages:
 
-### API Keys
+| Language | Code |
+|----------|------|
+| English | en |
+| Deutsch | de |
+| Italiano | it |
+| Français | fr |
+| Português | pt |
+| 日本語 | ja |
+| ไทย | th |
+| 中文 | zh |
 
-When `require_api_key` is enabled, external API requests need a valid key:
+### Beautiful Dark Mode
+Easy on the eyes, day or night. Toggle with one click.
+
+### Secure Authentication
+Two-layer security:
+1. **Global Access Code** - Shared code that changes (e.g., monthly)
+2. **Personal Password** - Your private password with recovery code
+
+---
+
+## REST API
+
+Full-featured API for integrations, mobile apps, or automation.
+
+### Endpoints
+
+| Action | Description | Auth |
+|--------|-------------|------|
+| `get_config` | Get public settings | - |
+| `check_user` | Check if user exists | - |
+| `set_password` | Create new account | Global |
+| `recover_password` | Reset with recovery code | Global |
+| `check_login` | Verify credentials | Full |
+| `change_password` | Update password | Full |
+| `get_notes` | Fetch all notes | Full |
+| `add_note` | Create new note | Full |
+| `update_note` | Modify existing note | Full |
+| `delete_note` | Remove note | Full |
+
+### API Security
+
+Protect your API from unauthorized access:
 
 ```php
+'require_api_key' => true,
 'api_keys' => [
-    'my-secret-key-123' => [
-        'name' => 'Mobile App',
-        'domains' => [],  // No domain restriction
+    'mobile-app-key-abc123' => [
+        'name' => 'iOS App',
+        'domains' => [],  // Allow from anywhere
         'enabled' => true
     ],
-    'partner-key-456' => [
-        'name' => 'Partner Website',
-        'domains' => ['partner.com', '*.partner.com'],  // Restricted to domain
+    'partner-integration-xyz' => [
+        'name' => 'Partner Portal',
+        'domains' => ['partner.com', '*.partner.com'],  // Domain locked
         'enabled' => true
     ]
 ]
 ```
 
-API key can be sent via:
-- Header: `X-API-Key: your-key`
-- Parameter: `?api_key=your-key`
+Send API key via header or parameter:
+```bash
+# Header method
+curl -H "X-API-Key: your-key" https://your-server/api/
+
+# Parameter method
+curl "https://your-server/api/?api_key=your-key&action=get_notes"
+```
+
+---
+
+## Quick Start
+
+### 1. Deploy
+Upload to any PHP-enabled web server (Apache, nginx, etc.)
+
+### 2. Configure
+Copy `api/config.example.php` to `api/config.php` and customize:
+
+```php
+return [
+    // Your secret access code pattern
+    'global_code_pattern' => '#myapp_{YYYY}{MM}',  // Changes monthly
+
+    // Storage options
+    'enable_pwa' => true,
+    'enable_offline_mode' => true,
+
+    // Security
+    'require_api_key' => false,  // Enable for external API access
+    'store_ip' => false,         // Privacy: don't track IPs
+];
+```
+
+### 3. Use
+Open in browser, create account, start taking notes!
+
+---
+
+## Configuration Reference
+
+### Dynamic Access Codes
+
+The global code can include date placeholders for automatic rotation:
+
+| Placeholder | Output | Example |
+|-------------|--------|---------|
+| `{YYYY}` | Year (4 digits) | 2025 |
+| `{YY}` | Year (2 digits) | 25 |
+| `{MM}` | Month | 01-12 |
+| `{DD}` | Day | 01-31 |
+
+**Example:** `#secret_{YYYY}{MM}` becomes `#secret_202512` in December 2025
+
+### Password Requirements
+
+```php
+'min_password_length' => 6,
+'password_require_uppercase' => false,
+'password_require_lowercase' => false,
+'password_require_number' => false,
+```
+
+### User Restrictions
+
+```php
+'allowed_usernames' => [],  // Empty = anyone can register
+'blocked_usernames' => ['admin', 'root', 'test'],
+```
+
+---
 
 ## Admin CLI
 
@@ -125,53 +199,48 @@ Manage users from the command line:
 # List all users
 php api/admin-cli.php list
 
-# Reset a user's password
-php api/admin-cli.php reset <username>
+# Reset password (user gets new recovery code)
+php api/admin-cli.php reset username
 
-# Delete a user and all their notes
-php api/admin-cli.php delete <username>
+# Delete user and all their notes
+php api/admin-cli.php delete username
 ```
+
+---
 
 ## Project Structure
 
 ```
 quick-notes/
-├── index.html          # Main app (HTML + CSS)
-├── main.js             # Frontend logic
-├── lang.js             # Translations (8 languages)
+├── index.html          # Single-page app
+├── main.js             # Application logic
+├── lang.js             # i18n translations
 ├── manifest.json       # PWA manifest
-├── sw.js               # Service Worker
-├── icons/              # PWA icons
+├── sw.js               # Service Worker for offline
+├── icons/              # App icons
 ├── api/
 │   ├── index.php       # REST API
-│   ├── config.php      # Configuration (protected)
-│   ├── admin-cli.php   # Admin CLI tool (protected)
-│   └── .htaccess       # Protects config files
+│   ├── config.php      # Your configuration
+│   └── admin-cli.php   # Admin tools
 └── notes/
-    ├── .htaccess       # Protects user data
-    └── user_*.json     # User data files
+    └── user_*.json     # User data (auto-created)
 ```
 
-## API Endpoints
+---
 
-| Action | Description | Auth Required |
-|--------|-------------|---------------|
-| `get_config` | Get public config | No |
-| `check_user` | Check if user exists | No |
-| `set_password` | Create account | Global Code |
-| `recover_password` | Reset password | Global Code |
-| `check_login` | Verify credentials | Yes |
-| `change_password` | Change password | Yes |
-| `get_notes` | Get all notes | Yes |
-| `add_note` | Create note | Yes |
-| `update_note` | Update note | Yes |
-| `delete_note` | Delete note | Yes |
+## Tech Stack
 
-**Auth Levels:**
-- **No**: No authentication required
-- **Global Code**: Requires global access code
-- **Yes**: Requires global code + personal password
+- **Frontend:** Vanilla JavaScript, Bootstrap 5.3, Bootstrap Icons
+- **Backend:** PHP 7.4+ (no framework, no dependencies)
+- **Storage:** JSON files (no database required)
+- **PWA:** Service Worker, Web App Manifest
+
+---
 
 ## License
 
-MIT
+MIT - Use it, modify it, sell it. Just don't blame us.
+
+---
+
+**Made with care for people who value simplicity and privacy.**
