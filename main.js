@@ -780,11 +780,8 @@ function QuickNotesApp() {
 
 			// Format dates
 			const createdAt = new Date(note.created_at);
-			const updatedAt = note.updated_at ? new Date(note.updated_at) : null;
-			const wasEdited = updatedAt && updatedAt.getTime() !== createdAt.getTime();
-			const editedInfo = wasEdited
-				? `<div class="small text-muted mt-1"><i class="bi bi-pencil me-1"></i>${t('lastEdited')}: ${updatedAt.toLocaleString()}</div>`
-				: '';
+			const updatedAt = note.updated_at ? new Date(note.updated_at) : createdAt;
+			const editedInfo = `<div class="small text-muted mt-1"><i class="bi bi-pencil me-1"></i>${t('lastEdited')}: ${updatedAt.toLocaleString()}</div>`;
 
 			// IP info (only for server notes when IP tracking is enabled)
 			let ipInfo = '';
