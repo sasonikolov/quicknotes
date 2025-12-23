@@ -34,6 +34,11 @@ Every single note can be stored exactly where you want:
 - Your notes are encrypted at rest
 - Recovery codes instead of email verification
 
+### Enterprise-Grade Security
+- **IP Firewall** - Blacklist or whitelist mode with CIDR and wildcard support
+- **Brute Force Protection** - Exponential delays and automatic lockouts
+- **API Key Authentication** - Secure external access with domain restrictions
+
 ---
 
 ## Features
@@ -127,6 +132,74 @@ curl -H "X-API-Key: your-key" https://your-server/api/
 # Parameter method
 curl "https://your-server/api/?api_key=your-key&action=get_notes"
 ```
+
+### IP Firewall
+
+Block hackers and unwanted access at the IP level:
+
+```php
+// Mode: 'disabled', 'blacklist', or 'whitelist'
+'ip_firewall_mode' => 'blacklist',
+
+'ip_blacklist' => [
+    '1.2.3.4',           // Block single IP
+    '10.0.0.0/8',        // Block CIDR range
+    '192.168.1.*',       // Block with wildcard
+],
+
+'ip_whitelist' => [
+    '127.0.0.1',         // Localhost
+    '::1',               // IPv6 localhost
+    '192.168.0.0/16',    // Local network
+],
+```
+
+**Modes:**
+- `disabled` - No IP filtering (default)
+- `blacklist` - Block listed IPs, allow all others
+- `whitelist` - Allow ONLY listed IPs, block everything else
+
+**Supports:**
+- Single IPs: `192.168.1.100`
+- CIDR ranges: `10.0.0.0/8`, `192.168.1.0/24`
+- Wildcards: `192.168.1.*`, `10.*.*.*`
+- IPv4 and IPv6
+
+### Brute Force Protection
+
+Automatic protection against password guessing attacks:
+
+```php
+'brute_force_protection' => true,
+
+// After 5 failed attempts, add delays
+'brute_force_max_attempts' => 5,
+
+// Start with 2 second delay, doubles each time
+'brute_force_delay' => 2,
+
+// Maximum delay cap (30 seconds)
+'brute_force_max_delay' => 30,
+
+// Time window for counting attempts (15 minutes)
+'brute_force_window' => 900,
+
+// Complete lockout after 20 failed attempts
+'brute_force_lockout_attempts' => 20,
+
+// Lockout duration (1 hour)
+'brute_force_lockout_duration' => 3600,
+```
+
+**How it works:**
+1. First 5 attempts: no delay
+2. 6th attempt: 2 second delay
+3. 7th attempt: 4 second delay
+4. 8th attempt: 8 second delay
+5. ...continues doubling up to 30 seconds
+6. After 20 attempts: complete lockout for 1 hour
+
+Failed attempts are tracked per IP address and automatically expire after the time window.
 
 ---
 

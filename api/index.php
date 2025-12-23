@@ -173,6 +173,214 @@ function getClientIP() {
 	return 'unknown';
 }
 
+// ============ IP Firewall Functions ============
+
+function ipMatchesCIDR($ip, $cidr) {
+	if (strpos($cidr, '/') === false) {
+		return $ip === $cidr;
+	}
+	list($subnet, $mask) = explode('/', $cidr);
+	$mask = (int)$mask;
+
+	// Handle IPv6
+	if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+		if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+			return false;
+		}
+		$ipBin = inet_pton($ip);
+		$subnetBin = inet_pton($subnet);
+		$maskBin = str_repeat('f', $mask / 4) . str_repeat('0', 32 - $mask / 4);
+		$maskBin = pack('H*', $maskBin);
+		return ($ipBin & $maskBin) === ($subnetBin & $maskBin);
+	}
+
+	// IPv4
+	$ipLong = ip2long($ip);
+	$subnetLong = ip2long($subnet);
+	$maskLong = -1 << (32 - $mask);
+	return ($ipLong & $maskLong) === ($subnetLong & $maskLong);
+}
+
+function ipMatchesWildcard($ip, $pattern) {
+	$regex = str_replace(['.', '*'], ['\\.', '\\d+'], $pattern);
+	return preg_match('/^' . $regex . '$/', $ip) === 1;
+}
+
+function ipMatchesPattern($ip, $pattern) {
+	// Exact match
+	if ($ip === $pattern) {
+		return true;
+	}
+	// CIDR match
+	if (strpos($pattern, '/') !== false) {
+		return ipMatchesCIDR($ip, $pattern);
+	}
+	// Wildcard match
+	if (strpos($pattern, '*') !== false) {
+		return ipMatchesWildcard($ip, $pattern);
+	}
+	return false;
+}
+
+function checkIPFirewall() {
+	$config = getConfig();
+	$mode = $config['ip_firewall_mode'] ?? 'disabled';
+
+	if ($mode === 'disabled') {
+		return true;
+	}
+
+	$ip = getClientIP();
+	if ($ip === 'unknown') {
+		return $mode !== 'whitelist'; // Block unknown IPs in whitelist mode
+	}
+
+	if ($mode === 'blacklist') {
+		$blacklist = $config['ip_blacklist'] ?? [];
+		foreach ($blacklist as $pattern) {
+			if (ipMatchesPattern($ip, $pattern)) {
+				return false; // IP is blacklisted
+			}
+		}
+		return true; // Not in blacklist, allow
+	}
+
+	if ($mode === 'whitelist') {
+		$whitelist = $config['ip_whitelist'] ?? [];
+		foreach ($whitelist as $pattern) {
+			if (ipMatchesPattern($ip, $pattern)) {
+				return true; // IP is whitelisted
+			}
+		}
+		return false; // Not in whitelist, block
+	}
+
+	return true;
+}
+
+// ============ Brute Force Protection ============
+
+function getBruteForceFile() {
+	return __DIR__ . '/../notes/.brute_force_log.json';
+}
+
+function loadBruteForceData() {
+	$file = getBruteForceFile();
+	if (file_exists($file)) {
+		$data = json_decode(file_get_contents($file), true);
+		if (is_array($data)) {
+			return $data;
+		}
+	}
+	return [];
+}
+
+function saveBruteForceData($data) {
+	$file = getBruteForceFile();
+	file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+}
+
+function cleanupBruteForceData(&$data, $window) {
+	$now = time();
+	foreach ($data as $ip => $info) {
+		// Remove entries older than the window
+		if (isset($info['attempts'])) {
+			$data[$ip]['attempts'] = array_filter($info['attempts'], function($timestamp) use ($now, $window) {
+				return ($now - $timestamp) < $window;
+			});
+		}
+		// Remove lockouts that have expired
+		if (isset($info['lockout_until']) && $info['lockout_until'] < $now) {
+			unset($data[$ip]['lockout_until']);
+		}
+		// Remove empty entries
+		if (empty($data[$ip]['attempts']) && !isset($data[$ip]['lockout_until'])) {
+			unset($data[$ip]);
+		}
+	}
+}
+
+function checkBruteForce() {
+	$config = getConfig();
+	if (empty($config['brute_force_protection'])) {
+		return ['allowed' => true, 'delay' => 0];
+	}
+
+	$ip = getClientIP();
+	$data = loadBruteForceData();
+	$window = $config['brute_force_window'] ?? 900;
+
+	// Cleanup old data
+	cleanupBruteForceData($data, $window);
+	saveBruteForceData($data);
+
+	// Check if IP is locked out
+	if (isset($data[$ip]['lockout_until']) && $data[$ip]['lockout_until'] > time()) {
+		$remaining = $data[$ip]['lockout_until'] - time();
+		return ['allowed' => false, 'lockout' => true, 'remaining' => $remaining];
+	}
+
+	// Count recent attempts
+	$attempts = count($data[$ip]['attempts'] ?? []);
+	$maxAttempts = $config['brute_force_max_attempts'] ?? 5;
+
+	if ($attempts < $maxAttempts) {
+		return ['allowed' => true, 'delay' => 0];
+	}
+
+	// Calculate delay (doubles with each attempt over max)
+	$baseDelay = $config['brute_force_delay'] ?? 2;
+	$maxDelay = $config['brute_force_max_delay'] ?? 30;
+	$extraAttempts = $attempts - $maxAttempts;
+	$delay = min($baseDelay * pow(2, $extraAttempts), $maxDelay);
+
+	return ['allowed' => true, 'delay' => $delay, 'attempts' => $attempts];
+}
+
+function recordFailedAttempt() {
+	$config = getConfig();
+	if (empty($config['brute_force_protection'])) {
+		return;
+	}
+
+	$ip = getClientIP();
+	$data = loadBruteForceData();
+	$window = $config['brute_force_window'] ?? 900;
+
+	// Cleanup old data
+	cleanupBruteForceData($data, $window);
+
+	// Record attempt
+	if (!isset($data[$ip])) {
+		$data[$ip] = ['attempts' => []];
+	}
+	$data[$ip]['attempts'][] = time();
+
+	// Check for lockout
+	$lockoutAttempts = $config['brute_force_lockout_attempts'] ?? 20;
+	if ($lockoutAttempts > 0 && count($data[$ip]['attempts']) >= $lockoutAttempts) {
+		$lockoutDuration = $config['brute_force_lockout_duration'] ?? 3600;
+		$data[$ip]['lockout_until'] = time() + $lockoutDuration;
+	}
+
+	saveBruteForceData($data);
+}
+
+function clearFailedAttempts() {
+	$config = getConfig();
+	if (empty($config['brute_force_protection'])) {
+		return;
+	}
+
+	$ip = getClientIP();
+	$data = loadBruteForceData();
+
+	if (isset($data[$ip])) {
+		unset($data[$ip]);
+		saveBruteForceData($data);
+	}
+}
+
 function getRequestOrigin() {
 	// Check Origin header first, then Referer
 	if (!empty($_SERVER['HTTP_ORIGIN'])) {
@@ -257,6 +465,31 @@ function getLogin() {
 }
 
 // ============ API Routing ============
+
+// ============ IP Firewall Check (First!) ============
+if (!checkIPFirewall()) {
+	http_response_code(403);
+	echo json_encode(['success' => false, 'message' => 'Access denied.', 'firewall' => true]);
+	exit;
+}
+
+// ============ Brute Force Check ============
+$bruteForceStatus = checkBruteForce();
+if (!$bruteForceStatus['allowed']) {
+	http_response_code(429);
+	$remaining = $bruteForceStatus['remaining'] ?? 0;
+	echo json_encode([
+		'success' => false,
+		'message' => 'Too many failed attempts. Try again in ' . ceil($remaining / 60) . ' minutes.',
+		'lockout' => true,
+		'retry_after' => $remaining
+	]);
+	exit;
+}
+// Apply delay if needed
+if (!empty($bruteForceStatus['delay'])) {
+	sleep($bruteForceStatus['delay']);
+}
 
 if (!isset($_REQUEST['action'])) {
 	echo json_encode(['success' => false, 'message' => 'No action specified.']);
@@ -389,14 +622,19 @@ if ($action === 'recover_password') {
 
 	$userData = loadUserData($login);
 	if ($userData === null || $userData['user']['recovery_code'] === null) {
+		recordFailedAttempt();
 		echo json_encode(['success' => false, 'message' => 'Invalid recovery code.']);
 		exit;
 	}
 
 	if (!password_verify($recoveryCode, $userData['user']['recovery_code'])) {
+		recordFailedAttempt();
 		echo json_encode(['success' => false, 'message' => 'Invalid recovery code.']);
 		exit;
 	}
+
+	// Recovery code verified - clear failed attempts
+	clearFailedAttempts();
 
 	// Generate new recovery code
 	$newRecoveryCode = generateRecoveryCode();
@@ -429,9 +667,13 @@ if ($userData === null || $userData['user']['password_hash'] === null) {
 	exit;
 }
 if (!password_verify($password, $userData['user']['password_hash'])) {
+	recordFailedAttempt();
 	echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Invalid password.']);
 	exit;
 }
+
+// Password verified successfully - clear failed attempts
+clearFailedAttempts();
 
 // --- check_login ---
 if ($action === 'check_login') {
