@@ -540,11 +540,14 @@ function QuickNotesApp() {
 
 	function loadNotes() {
 		if (STORAGE_MODE === 'local') {
-			this.notes = getLocalNotes();
+			this.notes = getLocalNotes().map(n => ({ ...n, _isLocal: true }));
 			displayNotes();
 		} else {
 			callApi('get_notes', { data: {} }, function(data) {
-				this.notes = data.notes;
+				// Combine server notes with local notes
+				const serverNotes = (data.notes || []).map(n => ({ ...n, _isLocal: false }));
+				const localNotes = getLocalNotes().map(n => ({ ...n, _isLocal: true }));
+				this.notes = [...serverNotes, ...localNotes];
 				displayNotes();
 			}.bind(this));
 		}
@@ -706,9 +709,12 @@ function QuickNotesApp() {
 		this.notes.forEach(note => {
 			const noteElement = document.createElement('div');
 			noteElement.className = 'card';
+			const storageBadge = note._isLocal
+				? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-hdd me-1"></i>${t('storedLocally')}</span>`
+				: `<span class="badge bg-primary ms-2"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
 			noteElement.innerHTML = `
 				<div class="card-body">
-					<h5 class="card-title">${note.title}</h5>
+					<h5 class="card-title">${note.title}${storageBadge}</h5>
 					<h6 class="card-subtitle">
 						<i class="bi bi-clock me-1"></i>${t('created')}: ${new Date(note.created_at).toLocaleString()}
 					</h6>
@@ -760,6 +766,9 @@ function QuickNotesApp() {
 	}
 
 	function displayNoteForm(note = null) {
+		const isCurrentlyLocal = note ? note._isLocal : false;
+		const showLocalCheckbox = STORAGE_MODE === 'server'; // Only show in server mode
+
 		const formDiv = document.createElement('div');
 		formDiv.className = 'card';
 		formDiv.innerHTML = `
@@ -776,6 +785,14 @@ function QuickNotesApp() {
 					<label for='content'><i class="bi bi-text-paragraph me-1"></i>${t('content')}</label>
 					<textarea class="form-control" id='content' rows='10' placeholder="${t('writeNoteHere')}">${note ? note.content : ''}</textarea>
 				</div>
+				${showLocalCheckbox ? `
+				<div class="form-check mb-3">
+					<input class="form-check-input" type="checkbox" id="storeLocallyCheck" ${isCurrentlyLocal ? 'checked' : ''}>
+					<label class="form-check-label" for="storeLocallyCheck">
+						<i class="bi bi-hdd me-1"></i>${t('storeLocally')}
+					</label>
+				</div>
+				` : ''}
 				<button id='saveNoteBtn' class="btn btn-primary">
 					<i class="bi ${note ? 'bi-check-lg' : 'bi-save'} me-2"></i>${note ? t('updateNote') : t('saveNote')}
 				</button>
@@ -786,33 +803,56 @@ function QuickNotesApp() {
 		document.getElementById('saveNoteBtn').addEventListener('click', () => {
 			const title = document.getElementById('title').value;
 			const content = document.getElementById('content').value;
+			const storeLocallyCheckbox = document.getElementById('storeLocallyCheck');
+			const storeLocally = storeLocallyCheckbox ? storeLocallyCheckbox.checked : (STORAGE_MODE === 'local');
 
 			if (!title || !content) {
 				alert(t('fillTitleContent'));
 				return;
 			}
 
-			if (STORAGE_MODE === 'local') {
-				if (note?.id) {
+			if (STORAGE_MODE === 'local' || storeLocally) {
+				// Save locally
+				if (note?.id && !note._isLocal) {
+					// Moving from server to local - delete from server first
+					callApi('delete_note', { data: { id: note.id } }, () => {
+						localAddNote(title, content);
+						showInformation(t('noteSaved'));
+						loadNotes();
+					});
+				} else if (note?.id && note._isLocal) {
+					// Update existing local note
 					localUpdateNote(note.id, title, content);
-				} else {
-					localAddNote(title, content);
-				}
-				showInformation(t('noteSaved'));
-				loadNotes();
-			} else {
-				const noteData = { title, content };
-				let action = 'add_note';
-
-				if (note?.id) {
-					noteData.id = note.id;
-					action = 'update_note';
-				}
-
-				callApi(action, { data: noteData }, () => {
 					showInformation(t('noteSaved'));
 					loadNotes();
-				});
+				} else {
+					// New local note
+					localAddNote(title, content);
+					showInformation(t('noteSaved'));
+					loadNotes();
+				}
+			} else {
+				// Save to server
+				if (note?.id && note._isLocal) {
+					// Moving from local to server - delete from local first
+					localDeleteNote(note.id);
+					callApi('add_note', { data: { title, content } }, () => {
+						showInformation(t('noteSaved'));
+						loadNotes();
+					});
+				} else {
+					// Update or add on server
+					const noteData = { title, content };
+					let action = 'add_note';
+					if (note?.id) {
+						noteData.id = note.id;
+						action = 'update_note';
+					}
+					callApi(action, { data: noteData }, () => {
+						showInformation(t('noteSaved'));
+						loadNotes();
+					});
+				}
 			}
 		});
 	}

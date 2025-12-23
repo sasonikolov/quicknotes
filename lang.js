@@ -92,7 +92,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'Local Storage Warning',
 		understand: 'I understand',
 		switchToServer: 'Switch to Server',
-		offlineBadge: 'Offline'
+		offlineBadge: 'Offline',
+		storeLocally: 'Store locally (browser only)',
+		storedLocally: 'Local',
+		storedOnServer: 'Server'
 	},
 
 	de: {
@@ -178,7 +181,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'Lokale Speicherung',
 		understand: 'Verstanden',
 		switchToServer: 'Zum Server wechseln',
-		offlineBadge: 'Offline'
+		offlineBadge: 'Offline',
+		storeLocally: 'Lokal speichern (nur Browser)',
+		storedLocally: 'Lokal',
+		storedOnServer: 'Server'
 	},
 
 	it: {
@@ -264,7 +270,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'Avviso archiviazione locale',
 		understand: 'Ho capito',
 		switchToServer: 'Passa al server',
-		offlineBadge: 'Offline'
+		offlineBadge: 'Offline',
+		storeLocally: 'Salva localmente (solo browser)',
+		storedLocally: 'Locale',
+		storedOnServer: 'Server'
 	},
 
 	fr: {
@@ -350,7 +359,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'Avertissement stockage local',
 		understand: 'Je comprends',
 		switchToServer: 'Passer au serveur',
-		offlineBadge: 'Hors ligne'
+		offlineBadge: 'Hors ligne',
+		storeLocally: 'Stocker localement (navigateur uniquement)',
+		storedLocally: 'Local',
+		storedOnServer: 'Serveur'
 	},
 
 	pt: {
@@ -436,7 +448,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'Aviso de armazenamento local',
 		understand: 'Entendi',
 		switchToServer: 'Mudar para servidor',
-		offlineBadge: 'Offline'
+		offlineBadge: 'Offline',
+		storeLocally: 'Armazenar localmente (apenas navegador)',
+		storedLocally: 'Local',
+		storedOnServer: 'Servidor'
 	},
 
 	ja: {
@@ -522,7 +537,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'ローカルストレージの警告',
 		understand: '理解しました',
 		switchToServer: 'サーバーに切り替え',
-		offlineBadge: 'オフライン'
+		offlineBadge: 'オフライン',
+		storeLocally: 'ローカルに保存（ブラウザのみ）',
+		storedLocally: 'ローカル',
+		storedOnServer: 'サーバー'
 	},
 
 	th: {
@@ -608,7 +626,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: 'คำเตือนการจัดเก็บในเครื่อง',
 		understand: 'เข้าใจแล้ว',
 		switchToServer: 'เปลี่ยนไปใช้เซิร์ฟเวอร์',
-		offlineBadge: 'ออฟไลน์'
+		offlineBadge: 'ออฟไลน์',
+		storeLocally: 'จัดเก็บในเครื่อง (เบราว์เซอร์เท่านั้น)',
+		storedLocally: 'ในเครื่อง',
+		storedOnServer: 'เซิร์ฟเวอร์'
 	},
 
 	zh: {
@@ -694,7 +715,10 @@ const LANGUAGES = {
 		localStorageWarningTitle: '本地存储警告',
 		understand: '我明白了',
 		switchToServer: '切换到服务器',
-		offlineBadge: '离线'
+		offlineBadge: '离线',
+		storeLocally: '本地存储（仅限浏览器）',
+		storedLocally: '本地',
+		storedOnServer: '服务器'
 	}
 };
 
