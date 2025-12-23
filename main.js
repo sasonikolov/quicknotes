@@ -779,10 +779,11 @@ function QuickNotesApp() {
 				: `<span class="badge bg-primary ms-auto flex-shrink-0"><i class="bi bi-cloud me-1"></i>${t('storedOnServer')}</span>`;
 
 			// Format dates
-			const createdDate = new Date(note.created_at).toLocaleDateString();
+			const createdAt = new Date(note.created_at);
 			const updatedAt = note.updated_at ? new Date(note.updated_at) : null;
-			const editedInfo = updatedAt && updatedAt.getTime() !== new Date(note.created_at).getTime()
-				? `<span class="ms-3"><i class="bi bi-pencil me-1"></i>${t('lastEdited')}: ${updatedAt.toLocaleString()}</span>`
+			const wasEdited = updatedAt && updatedAt.getTime() !== createdAt.getTime();
+			const editedInfo = wasEdited
+				? `<div class="small text-muted mt-1"><i class="bi bi-pencil me-1"></i>${t('lastEdited')}: ${updatedAt.toLocaleString()}</div>`
 				: '';
 
 			// IP info (only for server notes when IP tracking is enabled)
@@ -802,9 +803,10 @@ function QuickNotesApp() {
 						<h5 class="card-title mb-0 text-break" style="flex: 1; min-width: 0;">${note.title}</h5>
 						${storageBadge}
 					</div>
-					<h6 class="card-subtitle">
-						<i class="bi bi-clock me-1"></i>${t('created')}: ${new Date(note.created_at).toLocaleString()}${editedInfo}
-					</h6>
+					<div class="card-subtitle small text-muted">
+						<i class="bi bi-clock me-1"></i>${t('created')}: ${createdAt.toLocaleString()}
+					</div>
+					${editedInfo}
 					${ipInfo}
 					<div class="note-actions">
 						<button class="btn btn-info btn-sm" id="view_${note.id}"><i class="bi bi-chevron-down me-1" id="viewIcon_${note.id}"></i>${t('view')}</button>
