@@ -520,14 +520,44 @@ function hideSpinner() {
 		<div id='app'></div>
 	</div>
 	<script>
-		// Dark Mode Toggle
+		// Dark Mode Toggle with OS detection
 		const themeToggle = document.getElementById('themeToggle');
 		const themeIcon = document.getElementById('themeIcon');
-		const savedTheme = localStorage.getItem('theme') || 'light';
 
-		if (savedTheme === 'dark') {
-			document.documentElement.setAttribute('data-theme', 'dark');
-			themeIcon.className = 'bi bi-sun-fill';
+		// Check saved preference, otherwise detect OS preference
+		function getPreferredTheme() {
+			const savedTheme = localStorage.getItem('theme');
+			if (savedTheme) {
+				return savedTheme;
+			}
+			// Detect OS/browser dark mode preference
+			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				return 'dark';
+			}
+			return 'light';
+		}
+
+		function applyTheme(theme) {
+			if (theme === 'dark') {
+				document.documentElement.setAttribute('data-theme', 'dark');
+				themeIcon.className = 'bi bi-sun-fill';
+			} else {
+				document.documentElement.removeAttribute('data-theme');
+				themeIcon.className = 'bi bi-moon-fill';
+			}
+		}
+
+		// Apply initial theme
+		applyTheme(getPreferredTheme());
+
+		// Listen for OS theme changes
+		if (window.matchMedia) {
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				// Only auto-switch if user hasn't manually set a preference
+				if (!localStorage.getItem('theme')) {
+					applyTheme(e.matches ? 'dark' : 'light');
+				}
+			});
 		}
 
 		themeToggle.addEventListener('click', () => {
