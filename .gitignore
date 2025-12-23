@@ -1,5 +1,8 @@
 # Claude Code
 CLAUDE.md
 
-# Notes data
+# User data
 notes/*.json
+
+# Config (use config.example.php as template)
+api/config.php

@@ -1,0 +1,7 @@
+# Protect config and admin files from direct access
+<Files "config.php">
+    Require all denied
+</Files>
+<Files "admin-cli.php">
+    Require all denied
+</Files>
