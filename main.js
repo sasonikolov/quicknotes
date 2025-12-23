@@ -74,6 +74,15 @@ function QuickNotesApp() {
 		div_app.appendChild(node);
 	}
 
+	function logout() {
+		// Clear credentials from memory
+		SECRET_USER = '';
+		SECRET_KEY = '';
+		this.notes = [];
+		// Show login screen
+		displayLogin();
+	}
+
 	function getGlobalButtons() {
 		// create button group
 		var div_buttons = document.createElement('div');
@@ -95,6 +104,14 @@ function QuickNotesApp() {
 			displayNoteForm();
 		});
 		div_buttons.appendChild(newNoteBtn);
+		// Logout Button
+		const logoutBtn = document.createElement('button');
+		logoutBtn.className = 'btn btn-secondary';
+		logoutBtn.innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>Logout';
+		logoutBtn.addEventListener('click', function() {
+			logout();
+		});
+		div_buttons.appendChild(logoutBtn);
 		return div_buttons;
 	}
 

@@ -27,7 +27,7 @@ function check_secret_key($login, $secret) {
 	//
 	$valid_key = date("Ym"); // replace with your actual secret key
 	//$valid_key = "123"; // for testing purposes	
-	return $secret == $valid_key && $login == 'saso';
+	return $secret == $valid_key;
 }
 
 function getLogin() {
