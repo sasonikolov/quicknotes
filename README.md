@@ -279,10 +279,41 @@ The global code can include date placeholders for automatic rotation:
 
 ### User Restrictions
 
+Control exactly who can use your Quick Notes installation:
+
 ```php
 'allowed_usernames' => [],  // Empty = anyone can register
 'blocked_usernames' => ['admin', 'root', 'test'],
 ```
+
+**Use Cases:**
+
+**Solo Installation** - Just for yourself:
+```php
+'allowed_usernames' => ['myname'],
+```
+Nobody else can register. Your private note-taking space.
+
+**Family & Friends** - Shared with loved ones:
+```php
+'allowed_usernames' => ['mom', 'dad', 'lisa', 'tom'],
+```
+Only your family members can create accounts. Perfect for a family server.
+
+**Small Team** - Work collaboration:
+```php
+'allowed_usernames' => ['alex', 'jordan', 'sam', 'chris'],
+```
+Limit access to your team members only.
+
+**Open Registration** - Public instance:
+```php
+'allowed_usernames' => [],  // Empty = open
+'blocked_usernames' => ['admin', 'root', 'test', 'demo'],
+```
+Anyone can register, but block common/reserved names.
+
+Combined with the global access code, you have two layers of protection: even if someone guesses a valid username, they still need the global code to register.
 
 ---
 
