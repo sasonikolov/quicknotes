@@ -13,6 +13,7 @@ A powerful, privacy-focused note-taking app that works everywhere - online, offl
 
 - **Hybrid Storage** - Per-note choice: server sync OR local-only (browser)
 - **Works Offline** - Full PWA with Service Worker
+- **Smart Install Banner** - One-tap app installation on Android/Chrome
 - **8 Languages** - EN, DE, IT, FR, PT, JA, TH, ZH (auto-detect)
 - **Dark Mode** - One-click toggle
 - **Smart Sorting** - By name, date, or last edit
@@ -29,6 +30,13 @@ A powerful, privacy-focused note-taking app that works everywhere - online, offl
 
 ### Work Anywhere - Even Offline
 Install as a Progressive Web App on any device. Your notes sync when you're online, but keep working when you're not. Perfect for flights, commutes, or spotty WiFi.
+
+### Easy App Installation
+On **Android/Chrome**: A smart install banner appears automatically - just tap "Install" and you're done!
+
+On **iOS/Safari**: Tap the share button → "Add to Home Screen" → Done.
+
+Once installed, Quick Notes looks and feels like a native app - no browser bars, instant launch from your home screen.
 
 ### Your Data, Your Choice
 Every single note can be stored exactly where you want:
