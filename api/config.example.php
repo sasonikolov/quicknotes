@@ -8,29 +8,26 @@
 
 return [
     /**
-     * Password mode: 'individual' or 'global'
-     *
-     * 'individual' - Each user has their own password (stored hashed in their JSON file)
-     *                First login creates the account with the provided password
-     *
-     * 'global'     - All users share the same password pattern (legacy mode)
+     * Require global access code in addition to personal password
+     * When true: Users need BOTH the global code AND their personal password
+     * When false: Only personal password is required
      */
-    'password_mode' => 'individual',
+    'require_global_code' => true,
 
     /**
-     * Global password pattern (only used when password_mode = 'global')
+     * Global access code pattern
      * Available placeholders:
      *   {YYYY} - Current year (4 digits)
      *   {YY}   - Current year (2 digits)
      *   {MM}   - Current month (2 digits)
      *   {DD}   - Current day (2 digits)
      *
-     * Example: '#secret_{YYYY}{MM}' becomes '#secret_202512' in December 2025
+     * Example: '#snipic_{YYYY}{MM}' becomes '#snipic_202512' in December 2025
      */
-    'global_password_pattern' => '#snipic_{YYYY}{MM}',
+    'global_code_pattern' => '#snipic_{YYYY}{MM}',
 
     /**
-     * Minimum password length for individual passwords
+     * Minimum password length for personal passwords
      */
     'min_password_length' => 6,
 
@@ -39,4 +36,10 @@ return [
      * Example: ['admin', 'saso', 'guest']
      */
     'allowed_usernames' => [],
+
+    /**
+     * Blocked usernames (these usernames cannot be used)
+     * Example: ['admin', 'root', 'test']
+     */
+    'blocked_usernames' => ['admin', 'root', 'administrator', 'test'],
 ];

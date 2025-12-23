@@ -2,6 +2,8 @@ function QuickNotesApp() {
 	let api_url = 'api/';
 	let SECRET_USER = '';
 	let SECRET_KEY = '';
+	let GLOBAL_CODE = '';
+	let requireGlobalCode = true;
 	let div_app = null;
 
 	this.notes = [];
@@ -15,6 +17,7 @@ function QuickNotesApp() {
 		params.append('action', action);
 		params.append('login', SECRET_USER);
 		params.append('secret', SECRET_KEY);
+		params.append('global_code', GLOBAL_CODE);
 
 		// Add extra params
 		for (const [key, value] of Object.entries(extraParams)) {
@@ -36,7 +39,7 @@ function QuickNotesApp() {
 					const res = JSON.parse(xhr.responseText);
 					if (res.success) {
 						callback(res);
-					} else if (res.login_error) {
+					} else if (res.login_error || res.code_error) {
 						displayLogin();
 					} else {
 						alert('Error: ' + res.message);
@@ -69,6 +72,12 @@ function QuickNotesApp() {
 	}
 
 	function showModal(title, content, onClose = null) {
+		// Remove any existing modal first
+		const existingModal = document.getElementById('appModal');
+		if (existingModal) {
+			existingModal.remove();
+		}
+
 		const modalHtml = `
 			<div class="modal fade" id="appModal" tabindex="-1" data-bs-backdrop="static">
 				<div class="modal-dialog modal-dialog-centered">
@@ -82,10 +91,11 @@ function QuickNotesApp() {
 			</div>
 		`;
 		document.body.insertAdjacentHTML('beforeend', modalHtml);
-		const modal = new bootstrap.Modal(document.getElementById('appModal'));
+		const modalEl = document.getElementById('appModal');
+		const modal = new bootstrap.Modal(modalEl);
 		modal.show();
 
-		document.getElementById('appModal').addEventListener('hidden.bs.modal', function() {
+		modalEl.addEventListener('hidden.bs.modal', function() {
 			this.remove();
 			if (onClose) onClose();
 		});
@@ -93,10 +103,21 @@ function QuickNotesApp() {
 		return modal;
 	}
 
-	function closeModal() {
-		const modal = document.getElementById('appModal');
-		if (modal) {
-			bootstrap.Modal.getInstance(modal)?.hide();
+	function closeModal(callback = null) {
+		const modalEl = document.getElementById('appModal');
+		if (modalEl) {
+			const modal = bootstrap.Modal.getInstance(modalEl);
+			if (modal) {
+				if (callback) {
+					modalEl.addEventListener('hidden.bs.modal', callback, { once: true });
+				}
+				modal.hide();
+			} else {
+				modalEl.remove();
+				if (callback) callback();
+			}
+		} else if (callback) {
+			callback();
 		}
 	}
 
@@ -111,18 +132,19 @@ function QuickNotesApp() {
 	function logout() {
 		SECRET_USER = '';
 		SECRET_KEY = '';
+		GLOBAL_CODE = '';
 		this.notes = [];
 		displayLogin();
 	}
 
-	function checkUser(username) {
+	function checkUser(username, globalCode) {
 		SECRET_USER = username.toLowerCase().trim();
+		GLOBAL_CODE = globalCode || '';
 
 		callApi('check_user', {}, function(res) {
-			if (res.mode === 'global') {
-				// Global password mode - show password field
-				displayPasswordInput(false);
-			} else if (!res.user_exists || !res.has_password) {
+			requireGlobalCode = res.require_global_code;
+
+			if (!res.user_exists || !res.has_password) {
 				// New user - show set password modal
 				displaySetPasswordModal();
 			} else {
@@ -140,11 +162,15 @@ function QuickNotesApp() {
 				<div class="text-center mb-4">
 					<i class="bi bi-journal-bookmark-fill" style="font-size: 3rem; color: var(--accent);"></i>
 					<h3 class="mt-2">Quick Notes</h3>
-					<p class="text-muted">Enter your username to continue</p>
+					<p class="text-muted">Enter your credentials to continue</p>
 				</div>
 				<div class="form-group">
 					<label for='login'><i class="bi bi-person me-1"></i>Username</label>
 					<input class="form-control" type='text' id='login' name='login' placeholder="Enter your username" autocomplete="username">
+				</div>
+				<div class="form-group">
+					<label for='globalCode'><i class="bi bi-shield-lock me-1"></i>Access Code</label>
+					<input class="form-control" type='password' id='globalCode' placeholder="Enter access code" autocomplete="off">
 				</div>
 				<button id='continueBtn' class="btn btn-primary w-100">
 					<i class="bi bi-arrow-right me-2"></i>Continue
@@ -154,18 +180,24 @@ function QuickNotesApp() {
 		setContent(loginDiv, false);
 
 		const loginInput = document.getElementById('login');
+		const globalCodeInput = document.getElementById('globalCode');
 		const continueBtn = document.getElementById('continueBtn');
 
 		continueBtn.addEventListener('click', () => {
 			const login = loginInput.value.trim();
+			const globalCode = globalCodeInput.value.trim();
 			if (!login) {
 				alert('Please enter your username.');
 				return;
 			}
-			checkUser(login);
+			if (!globalCode) {
+				alert('Please enter the access code.');
+				return;
+			}
+			checkUser(login, globalCode);
 		});
 
-		loginInput.addEventListener('keypress', (e) => {
+		globalCodeInput.addEventListener('keypress', (e) => {
 			if (e.key === 'Enter') continueBtn.click();
 		});
 	}
@@ -277,8 +309,9 @@ function QuickNotesApp() {
 
 				SECRET_KEY = newPw;
 				callApi('set_password', {}, function(res) {
-					closeModal();
-					displayRecoveryCodeModal(res.recovery_code);
+					closeModal(() => {
+						displayRecoveryCodeModal(res.recovery_code);
+					});
 				});
 			});
 
@@ -364,9 +397,10 @@ function QuickNotesApp() {
 
 				SECRET_KEY = newPw;
 				callApi('recover_password', { recovery_code: code }, function(res) {
-					closeModal();
-					showInformation('Password reset successfully!', 'success');
-					displayRecoveryCodeModal(res.recovery_code);
+					closeModal(() => {
+						showInformation('Password reset successfully!', 'success');
+						displayRecoveryCodeModal(res.recovery_code);
+					});
 				});
 			});
 

@@ -83,9 +83,9 @@ function generateRecoveryCode() {
 	return strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
 }
 
-function generateGlobalPassword() {
+function generateGlobalCode() {
 	$config = getConfig();
-	$pattern = $config['global_password_pattern'];
+	$pattern = $config['global_code_pattern'];
 	$replacements = [
 		'{YYYY}' => date('Y'),
 		'{YY}' => date('y'),
@@ -93,6 +93,15 @@ function generateGlobalPassword() {
 		'{DD}' => date('d')
 	];
 	return str_replace(array_keys($replacements), array_values($replacements), $pattern);
+}
+
+function verifyGlobalCode($code) {
+	$config = getConfig();
+	if (!$config['require_global_code']) {
+		return true;
+	}
+	$validCode = generateGlobalCode();
+	return $code === $validCode;
 }
 
 function getLogin() {
@@ -116,6 +125,12 @@ if (!empty($login) && !empty($config['allowed_usernames']) && !in_array($login, 
 	exit;
 }
 
+// Check blocked usernames
+if (!empty($login) && !empty($config['blocked_usernames']) && in_array($login, $config['blocked_usernames'])) {
+	echo json_encode(['success' => false, 'message' => 'This username is reserved.']);
+	exit;
+}
+
 // --- check_user: Check if user exists and has password ---
 if ($action === 'check_user') {
 	if (empty($login)) {
@@ -123,36 +138,22 @@ if ($action === 'check_user') {
 		exit;
 	}
 
-	// Global password mode - always require password
-	if ($config['password_mode'] === 'global') {
-		echo json_encode([
-			'success' => true,
-			'user_exists' => true,
-			'has_password' => true,
-			'mode' => 'global'
-		]);
-		exit;
-	}
-
-	// Individual password mode
 	$userData = loadUserData($login);
-	if ($userData === null) {
-		// New user
-		echo json_encode([
-			'success' => true,
-			'user_exists' => false,
-			'has_password' => false,
-			'mode' => 'individual'
-		]);
-	} else {
-		// Existing user
-		echo json_encode([
-			'success' => true,
-			'user_exists' => true,
-			'has_password' => ($userData['user']['password_hash'] !== null),
-			'mode' => 'individual'
-		]);
-	}
+	echo json_encode([
+		'success' => true,
+		'user_exists' => ($userData !== null),
+		'has_password' => ($userData !== null && $userData['user']['password_hash'] !== null),
+		'require_global_code' => $config['require_global_code']
+	]);
+	exit;
+}
+
+// ============ Actions requiring global code ============
+
+$globalCode = isset($_REQUEST['global_code']) ? trim($_REQUEST['global_code']) : '';
+
+if ($config['require_global_code'] && !verifyGlobalCode($globalCode)) {
+	echo json_encode(['success' => false, 'message' => 'Invalid access code.', 'code_error' => true]);
 	exit;
 }
 
@@ -247,7 +248,7 @@ if ($action === 'recover_password') {
 	exit;
 }
 
-// ============ Protected Actions (require password) ============
+// ============ Protected Actions (require global code + personal password) ============
 
 $password = isset($_REQUEST['secret']) ? trim($_REQUEST['secret']) : '';
 
@@ -256,23 +257,15 @@ if (empty($login) || empty($password)) {
 	exit;
 }
 
-// Verify password
-if ($config['password_mode'] === 'global') {
-	$valid_password = generateGlobalPassword();
-	if ($password !== $valid_password) {
-		echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Invalid password.']);
-		exit;
-	}
-} else {
-	$userData = loadUserData($login);
-	if ($userData === null || $userData['user']['password_hash'] === null) {
-		echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Please set a password first.']);
-		exit;
-	}
-	if (!password_verify($password, $userData['user']['password_hash'])) {
-		echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Invalid password.']);
-		exit;
-	}
+// Verify personal password
+$userData = loadUserData($login);
+if ($userData === null || $userData['user']['password_hash'] === null) {
+	echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Please set a password first.']);
+	exit;
+}
+if (!password_verify($password, $userData['user']['password_hash'])) {
+	echo json_encode(['success' => false, 'login_error' => true, 'message' => 'Invalid password.']);
+	exit;
 }
 
 // --- check_login ---
@@ -288,19 +281,7 @@ if (!isset($_REQUEST['data'])) {
 
 // --- get_notes ---
 if ($action === 'get_notes') {
-	if ($config['password_mode'] === 'global') {
-		// Legacy: use old file format
-		$path = checkAndGetNotesFolder();
-		$notes_file = $path . '/notes_' . md5($login) . '.json';
-		$notes = [];
-		if (file_exists($notes_file)) {
-			$notes = json_decode(file_get_contents($notes_file), true) ?: [];
-		}
-		echo json_encode(['success' => true, 'notes' => $notes]);
-	} else {
-		$userData = loadUserData($login);
-		echo json_encode(['success' => true, 'notes' => $userData['notes'] ?? []]);
-	}
+	echo json_encode(['success' => true, 'notes' => $userData['notes'] ?? []]);
 	exit;
 }
 
@@ -323,7 +304,6 @@ if ($action === 'add_note') {
 		'updated_at' => date('c')
 	];
 
-	$userData = loadUserData($login);
 	$userData['notes'][] = $note;
 	saveUserData($login, $userData);
 
@@ -343,9 +323,7 @@ if ($action === 'update_note') {
 		exit;
 	}
 
-	$userData = loadUserData($login);
 	$found = false;
-
 	foreach ($userData['notes'] as &$note) {
 		if ($note['id'] === $note_id) {
 			$note['title'] = $title;
@@ -376,9 +354,7 @@ if ($action === 'delete_note') {
 		exit;
 	}
 
-	$userData = loadUserData($login);
 	$found = false;
-
 	foreach ($userData['notes'] as $index => $note) {
 		if ($note['id'] === $note_id) {
 			unset($userData['notes'][$index]);
