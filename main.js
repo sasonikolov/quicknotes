@@ -503,6 +503,10 @@ function QuickNotesApp() {
 					alert('Current password is incorrect.');
 					return;
 				}
+				if (newPw === currentPw) {
+					alert('New password must be different from current password.');
+					return;
+				}
 				if (newPw.length < 6) {
 					alert('New password must be at least 6 characters.');
 					return;
