@@ -51,11 +51,14 @@ function getUserFilePath($login) {
 }
 
 function getDefaultUserStructure($login) {
+	$config = getConfig();
 	return [
 		'user' => [
 			'login' => strtolower(trim($login)),
 			'password_hash' => null,
 			'recovery_code' => null,
+			'access_code_pattern' => $config['global_code_pattern'] ?? '{YYYY}{MM}',
+			'access_code_setup_shown' => false,
 			'created_at' => date('c')
 		],
 		'notes' => []
@@ -151,9 +154,19 @@ function validatePassword($password) {
 	return null; // Valid
 }
 
-function generateGlobalCode() {
+function generateGlobalCode($customPattern = null) {
 	$config = getConfig();
-	$pattern = $config['global_code_pattern'];
+	$pattern = $customPattern ?? $config['global_code_pattern'];
+	$replacements = [
+		'{YYYY}' => date('Y'),
+		'{YY}' => date('y'),
+		'{MM}' => date('m'),
+		'{DD}' => date('d')
+	];
+	return str_replace(array_keys($replacements), array_values($replacements), $pattern);
+}
+
+function generateCodeFromPattern($pattern) {
 	$replacements = [
 		'{YYYY}' => date('Y'),
 		'{YY}' => date('y'),
@@ -458,12 +471,13 @@ function verifyApiKey() {
 	return true; // Key valid, no domain restrictions
 }
 
-function verifyGlobalCode($code) {
+function verifyGlobalCode($code, $userPattern = null) {
 	$config = getConfig();
 	if (!$config['require_global_code']) {
 		return true;
 	}
-	$validCode = generateGlobalCode();
+	// Use user-specific pattern if provided, otherwise server default
+	$validCode = generateGlobalCode($userPattern);
 	return $code === $validCode;
 }
 
@@ -561,7 +575,16 @@ if ($action === 'check_user') {
 
 $globalCode = isset($_REQUEST['global_code']) ? trim($_REQUEST['global_code']) : '';
 
-if ($config['require_global_code'] && !verifyGlobalCode($globalCode)) {
+// Load user data to get their custom access code pattern (if any)
+$userPatternForCode = null;
+if (!empty($login)) {
+	$tempUserData = loadUserData($login);
+	if ($tempUserData !== null && !empty($tempUserData['user']['access_code_pattern'])) {
+		$userPatternForCode = $tempUserData['user']['access_code_pattern'];
+	}
+}
+
+if ($config['require_global_code'] && !verifyGlobalCode($globalCode, $userPatternForCode)) {
 	echo json_encode(['success' => false, 'message' => 'Invalid access code.', 'code_error' => true]);
 	exit;
 }
@@ -718,6 +741,60 @@ if ($action === 'change_password') {
 	exit;
 }
 
+// --- update_access_code_pattern: Update user's access code pattern ---
+if ($action === 'update_access_code_pattern') {
+	$newPattern = isset($_REQUEST['pattern']) ? trim($_REQUEST['pattern']) : '';
+
+	if (empty($newPattern)) {
+		echo json_encode(['success' => false, 'message' => 'Pattern is required.']);
+		exit;
+	}
+
+	// Validate pattern - must contain at least one placeholder or be at least 4 chars
+	$hasPlaceholder = preg_match('/\{(YYYY|YY|MM|DD)\}/', $newPattern);
+	if (!$hasPlaceholder && strlen($newPattern) < 4) {
+		echo json_encode(['success' => false, 'message' => 'Pattern must contain placeholders or be at least 4 characters.']);
+		exit;
+	}
+
+	$userData['user']['access_code_pattern'] = $newPattern;
+	$userData['user']['access_code_setup_shown'] = true;
+	saveUserData($login, $userData);
+
+	// Generate the current code from the new pattern
+	$currentCode = generateCodeFromPattern($newPattern);
+
+	echo json_encode([
+		'success' => true,
+		'message' => 'Access code pattern updated.',
+		'pattern' => $newPattern,
+		'current_code' => $currentCode
+	]);
+	exit;
+}
+
+// --- mark_access_code_setup_shown: Mark that user has seen the setup popup ---
+if ($action === 'mark_access_code_setup_shown') {
+	$userData['user']['access_code_setup_shown'] = true;
+	saveUserData($login, $userData);
+
+	echo json_encode(['success' => true]);
+	exit;
+}
+
+// --- get_current_access_code: Get the current access code based on pattern ---
+if ($action === 'get_current_access_code') {
+	$pattern = $userData['user']['access_code_pattern'] ?? $config['global_code_pattern'];
+	$currentCode = generateCodeFromPattern($pattern);
+
+	echo json_encode([
+		'success' => true,
+		'pattern' => $pattern,
+		'current_code' => $currentCode
+	]);
+	exit;
+}
+
 if (!isset($_REQUEST['data'])) {
 	echo json_encode(['success' => false, 'message' => 'No data specified.']);
 	exit;
@@ -725,7 +802,14 @@ if (!isset($_REQUEST['data'])) {
 
 // --- get_notes ---
 if ($action === 'get_notes') {
-	echo json_encode(['success' => true, 'notes' => $userData['notes'] ?? []]);
+	echo json_encode([
+		'success' => true,
+		'notes' => $userData['notes'] ?? [],
+		'user_settings' => [
+			'access_code_pattern' => $userData['user']['access_code_pattern'] ?? $config['global_code_pattern'],
+			'access_code_setup_shown' => $userData['user']['access_code_setup_shown'] ?? false
+		]
+	]);
 	exit;
 }
 

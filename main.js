@@ -17,6 +17,12 @@ function QuickNotesApp() {
 		store_ip: false
 	};
 
+	// User settings from server
+	let USER_SETTINGS = {
+		access_code_pattern: '{YYYY}{MM}',
+		access_code_setup_shown: false
+	};
+
 	// Sort settings
 	let currentSort = localStorage.getItem('notes_sort') || 'date_desc';
 
@@ -578,6 +584,18 @@ function QuickNotesApp() {
 				const serverNotes = (data.notes || []).map(n => ({ ...n, _isLocal: false }));
 				const localNotes = getLocalNotes().map(n => ({ ...n, _isLocal: true }));
 				this.notes = [...serverNotes, ...localNotes];
+
+				// Update user settings
+				if (data.user_settings) {
+					USER_SETTINGS = data.user_settings;
+
+					// Show setup modal if not shown yet
+					if (!USER_SETTINGS.access_code_setup_shown) {
+						displayAccessCodeSetupModal();
+						return;
+					}
+				}
+
 				displayNotes();
 			}.bind(this));
 		}
@@ -622,8 +640,15 @@ function QuickNotesApp() {
 		newNoteBtn.addEventListener('click', () => displayNoteForm());
 		div_buttons.appendChild(newNoteBtn);
 
-		// Only show password change for server mode
+		// Only show password change and settings for server mode
 		if (STORAGE_MODE === 'server') {
+			const settingsBtn = document.createElement('button');
+			settingsBtn.className = 'btn btn-outline-primary';
+			settingsBtn.innerHTML = '<i class="bi bi-gear me-1"></i>';
+			settingsBtn.title = t('settings');
+			settingsBtn.addEventListener('click', () => displayAccessCodeSettingsModal());
+			div_buttons.appendChild(settingsBtn);
+
 			const changePassBtn = document.createElement('button');
 			changePassBtn.className = 'btn btn-outline-primary';
 			changePassBtn.innerHTML = '<i class="bi bi-key me-1"></i>';
@@ -718,6 +743,134 @@ function QuickNotesApp() {
 			});
 
 			currentPwInput.focus();
+		}, 300);
+	}
+
+	function generatePreviewCode(pattern) {
+		const now = new Date();
+		const replacements = {
+			'{YYYY}': now.getFullYear().toString(),
+			'{YY}': now.getFullYear().toString().slice(-2),
+			'{MM}': (now.getMonth() + 1).toString().padStart(2, '0'),
+			'{DD}': now.getDate().toString().padStart(2, '0')
+		};
+		let result = pattern;
+		for (const [key, value] of Object.entries(replacements)) {
+			result = result.split(key).join(value);
+		}
+		return result;
+	}
+
+	function displayAccessCodeSettingsModal() {
+		const currentPattern = USER_SETTINGS.access_code_pattern || '{YYYY}{MM}';
+		const currentCode = generatePreviewCode(currentPattern);
+
+		const content = `
+			<div class="text-center mb-3">
+				<i class="bi bi-shield-lock" style="font-size: 2.5rem; color: var(--accent);"></i>
+				<p class="mt-2">${t('accessCodePatternDesc')}</p>
+				<p class="small text-muted">${t('accessCodePlaceholders')}</p>
+				<p class="small text-muted fst-italic">${t('accessCodeExample')}</p>
+			</div>
+			<div class="form-group">
+				<label for="accessCodePattern"><i class="bi bi-code-square me-1"></i>${t('accessCodePattern')}</label>
+				<input type="text" class="form-control" id="accessCodePattern" value="${currentPattern}" placeholder="#myApp_{YYYY}{MM}">
+			</div>
+			<div class="alert alert-info py-2 mb-3">
+				<small><i class="bi bi-info-circle me-1"></i>${t('currentAccessCode')}:</small>
+				<div class="fw-bold mt-1" id="previewCode">${currentCode}</div>
+			</div>
+			<button id="savePatternBtn" class="btn btn-primary w-100">
+				<i class="bi bi-check-lg me-2"></i>${t('savePattern')}
+			</button>
+			<div class="text-center mt-3">
+				<a href="#" id="cancelPatternEdit" class="text-muted">${t('cancel')}</a>
+			</div>
+		`;
+
+		showModal(t('accessCodeSettings'), content);
+
+		setTimeout(() => {
+			const patternInput = document.getElementById('accessCodePattern');
+			const previewCode = document.getElementById('previewCode');
+			const saveBtn = document.getElementById('savePatternBtn');
+			const cancelBtn = document.getElementById('cancelPatternEdit');
+
+			// Live preview
+			patternInput.addEventListener('input', () => {
+				const newPattern = patternInput.value;
+				previewCode.textContent = generatePreviewCode(newPattern);
+			});
+
+			saveBtn.addEventListener('click', () => {
+				const newPattern = patternInput.value.trim();
+				if (!newPattern) {
+					alert(t('error') + ': Pattern is required');
+					return;
+				}
+
+				callApi('update_access_code_pattern', { pattern: newPattern }, function(res) {
+					USER_SETTINGS.access_code_pattern = res.pattern;
+					USER_SETTINGS.access_code_setup_shown = true;
+					closeModal();
+					showInformation(t('patternSaved'), 'success');
+				});
+			});
+
+			cancelBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+				closeModal();
+			});
+
+			patternInput.focus();
+		}, 300);
+	}
+
+	function displayAccessCodeSetupModal() {
+		const currentPattern = USER_SETTINGS.access_code_pattern || '{YYYY}{MM}';
+		const currentCode = generatePreviewCode(currentPattern);
+
+		const content = `
+			<div class="text-center">
+				<i class="bi bi-shield-check" style="font-size: 3rem; color: var(--accent);"></i>
+				<h5 class="mt-3">${t('setupAccessCode')}</h5>
+				<p class="text-muted">${t('setupAccessCodeDesc')}</p>
+				<div class="alert alert-secondary py-2 my-3">
+					<small>${t('currentAccessCode')}:</small>
+					<div class="fw-bold">${currentCode}</div>
+					<small class="text-muted">(${t('accessCodePattern')}: ${currentPattern})</small>
+				</div>
+				<p class="small text-muted"><i class="bi bi-gear me-1"></i>${t('settingsHint')}</p>
+				<div class="d-grid gap-2 mt-3">
+					<button id="customizePatternBtn" class="btn btn-primary">
+						<i class="bi bi-pencil me-2"></i>${t('customizeNow')}
+					</button>
+					<button id="keepDefaultBtn" class="btn btn-outline-secondary">
+						<i class="bi bi-check-lg me-2"></i>${t('keepDefault')}
+					</button>
+				</div>
+			</div>
+		`;
+
+		showModal(t('setupAccessCode'), content);
+
+		setTimeout(() => {
+			const customizeBtn = document.getElementById('customizePatternBtn');
+			const keepDefaultBtn = document.getElementById('keepDefaultBtn');
+
+			customizeBtn.addEventListener('click', () => {
+				closeModal(() => {
+					displayAccessCodeSettingsModal();
+				});
+			});
+
+			keepDefaultBtn.addEventListener('click', () => {
+				callApi('mark_access_code_setup_shown', {}, function() {
+					USER_SETTINGS.access_code_setup_shown = true;
+					closeModal();
+					displayNotes();
+				});
+			});
 		}, 300);
 	}
 

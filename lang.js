@@ -105,7 +105,22 @@ const LANGUAGES = {
 		createdFrom: 'from',
 		// IP
 		createdFromIP: 'Created from',
-		lastEditedFromIP: 'Last edited from'
+		lastEditedFromIP: 'Last edited from',
+		// Access Code Settings
+		accessCodeSettings: 'Access Code Settings',
+		accessCodePattern: 'Access Code Pattern',
+		accessCodePatternDesc: 'Customize your personal access code pattern. Use placeholders:',
+		accessCodePlaceholders: '{YYYY} = Year (4 digits), {YY} = Year (2 digits), {MM} = Month, {DD} = Day',
+		accessCodeExample: 'Example: #myApp_{YYYY}{MM} becomes #myApp_202601',
+		currentAccessCode: 'Your current access code',
+		savePattern: 'Save Pattern',
+		patternSaved: 'Access code pattern saved!',
+		setupAccessCode: 'Set Up Your Access Code',
+		setupAccessCodeDesc: 'You can customize your personal access code pattern for extra security. This code changes automatically based on the pattern you set.',
+		keepDefault: 'Keep Default',
+		customizeNow: 'Customize Now',
+		settingsHint: 'You can change this later in Settings',
+		settings: 'Settings'
 	},
 
 	de: {
@@ -202,7 +217,22 @@ const LANGUAGES = {
 		lastEdited: 'Bearbeitet',
 		createdFrom: 'von',
 		createdFromIP: 'Erstellt von',
-		lastEditedFromIP: 'Zuletzt bearbeitet von'
+		lastEditedFromIP: 'Zuletzt bearbeitet von',
+		// Access Code Settings
+		accessCodeSettings: 'Zugangscode-Einstellungen',
+		accessCodePattern: 'Zugangscode-Muster',
+		accessCodePatternDesc: 'Passe dein persönliches Zugangscode-Muster an. Verwende Platzhalter:',
+		accessCodePlaceholders: '{YYYY} = Jahr (4-stellig), {YY} = Jahr (2-stellig), {MM} = Monat, {DD} = Tag',
+		accessCodeExample: 'Beispiel: #meineApp_{YYYY}{MM} wird zu #meineApp_202601',
+		currentAccessCode: 'Dein aktueller Zugangscode',
+		savePattern: 'Muster speichern',
+		patternSaved: 'Zugangscode-Muster gespeichert!',
+		setupAccessCode: 'Zugangscode einrichten',
+		setupAccessCodeDesc: 'Du kannst dein persönliches Zugangscode-Muster für mehr Sicherheit anpassen. Der Code ändert sich automatisch basierend auf dem Muster.',
+		keepDefault: 'Standard beibehalten',
+		customizeNow: 'Jetzt anpassen',
+		settingsHint: 'Du kannst das später in den Einstellungen ändern',
+		settings: 'Einstellungen'
 	},
 
 	it: {
@@ -299,7 +329,21 @@ const LANGUAGES = {
 		lastEdited: 'Modificato',
 		createdFrom: 'da',
 		createdFromIP: 'Creato da',
-		lastEditedFromIP: 'Ultima modifica da'
+		lastEditedFromIP: 'Ultima modifica da',
+		accessCodeSettings: 'Impostazioni codice di accesso',
+		accessCodePattern: 'Pattern codice di accesso',
+		accessCodePatternDesc: 'Personalizza il tuo pattern del codice di accesso. Usa i segnaposto:',
+		accessCodePlaceholders: '{YYYY} = Anno (4 cifre), {YY} = Anno (2 cifre), {MM} = Mese, {DD} = Giorno',
+		accessCodeExample: 'Esempio: #miaApp_{YYYY}{MM} diventa #miaApp_202601',
+		currentAccessCode: 'Il tuo codice di accesso attuale',
+		savePattern: 'Salva pattern',
+		patternSaved: 'Pattern del codice di accesso salvato!',
+		setupAccessCode: 'Configura il codice di accesso',
+		setupAccessCodeDesc: 'Puoi personalizzare il pattern del tuo codice di accesso per maggiore sicurezza.',
+		keepDefault: 'Mantieni predefinito',
+		customizeNow: 'Personalizza ora',
+		settingsHint: 'Puoi modificarlo nelle Impostazioni',
+		settings: 'Impostazioni'
 	},
 
 	fr: {
@@ -396,7 +440,21 @@ const LANGUAGES = {
 		lastEdited: 'Modifié',
 		createdFrom: 'de',
 		createdFromIP: 'Créé depuis',
-		lastEditedFromIP: 'Dernière modif. depuis'
+		lastEditedFromIP: 'Dernière modif. depuis',
+		accessCodeSettings: "Paramètres du code d'accès",
+		accessCodePattern: "Modèle du code d'accès",
+		accessCodePatternDesc: 'Personnalisez votre modèle de code. Utilisez les variables:',
+		accessCodePlaceholders: '{YYYY} = Année (4 chiffres), {YY} = Année (2 chiffres), {MM} = Mois, {DD} = Jour',
+		accessCodeExample: 'Exemple: #monApp_{YYYY}{MM} devient #monApp_202601',
+		currentAccessCode: "Votre code d'accès actuel",
+		savePattern: 'Enregistrer le modèle',
+		patternSaved: "Modèle du code d'accès enregistré!",
+		setupAccessCode: "Configurer le code d'accès",
+		setupAccessCodeDesc: "Vous pouvez personnaliser votre modèle de code d'accès pour plus de sécurité.",
+		keepDefault: 'Garder par défaut',
+		customizeNow: 'Personnaliser',
+		settingsHint: 'Modifiable dans les Paramètres',
+		settings: 'Paramètres'
 	},
 
 	pt: {
@@ -493,7 +551,21 @@ const LANGUAGES = {
 		lastEdited: 'Editado',
 		createdFrom: 'de',
 		createdFromIP: 'Criado de',
-		lastEditedFromIP: 'Última edição de'
+		lastEditedFromIP: 'Última edição de',
+		accessCodeSettings: 'Configurações do código de acesso',
+		accessCodePattern: 'Padrão do código de acesso',
+		accessCodePatternDesc: 'Personalize seu padrão de código. Use os marcadores:',
+		accessCodePlaceholders: '{YYYY} = Ano (4 dígitos), {YY} = Ano (2 dígitos), {MM} = Mês, {DD} = Dia',
+		accessCodeExample: 'Exemplo: #meuApp_{YYYY}{MM} vira #meuApp_202601',
+		currentAccessCode: 'Seu código de acesso atual',
+		savePattern: 'Salvar padrão',
+		patternSaved: 'Padrão do código salvo!',
+		setupAccessCode: 'Configurar código de acesso',
+		setupAccessCodeDesc: 'Você pode personalizar seu padrão de código de acesso para mais segurança.',
+		keepDefault: 'Manter padrão',
+		customizeNow: 'Personalizar agora',
+		settingsHint: 'Alterável nas Configurações',
+		settings: 'Configurações'
 	},
 
 	ja: {
@@ -590,7 +662,21 @@ const LANGUAGES = {
 		lastEdited: '編集',
 		createdFrom: 'から',
 		createdFromIP: '作成元',
-		lastEditedFromIP: '最終編集元'
+		lastEditedFromIP: '最終編集元',
+		accessCodeSettings: 'アクセスコード設定',
+		accessCodePattern: 'アクセスコードパターン',
+		accessCodePatternDesc: 'パターンをカスタマイズ。プレースホルダー:',
+		accessCodePlaceholders: '{YYYY} = 年(4桁), {YY} = 年(2桁), {MM} = 月, {DD} = 日',
+		accessCodeExample: '例: #myApp_{YYYY}{MM} → #myApp_202601',
+		currentAccessCode: '現在のアクセスコード',
+		savePattern: 'パターンを保存',
+		patternSaved: 'パターンが保存されました！',
+		setupAccessCode: 'アクセスコードの設定',
+		setupAccessCodeDesc: 'セキュリティを高めるためにパターンをカスタマイズできます。',
+		keepDefault: 'デフォルトを使用',
+		customizeNow: 'カスタマイズ',
+		settingsHint: '設定で後から変更できます',
+		settings: '設定'
 	},
 
 	th: {
@@ -687,7 +773,21 @@ const LANGUAGES = {
 		lastEdited: 'แก้ไข',
 		createdFrom: 'จาก',
 		createdFromIP: 'สร้างจาก',
-		lastEditedFromIP: 'แก้ไขล่าสุดจาก'
+		lastEditedFromIP: 'แก้ไขล่าสุดจาก',
+		accessCodeSettings: 'ตั้งค่ารหัสเข้าใช้',
+		accessCodePattern: 'รูปแบบรหัสเข้าใช้',
+		accessCodePatternDesc: 'ปรับแต่งรูปแบบรหัส ใช้ตัวแปร:',
+		accessCodePlaceholders: '{YYYY} = ปี (4 หลัก), {YY} = ปี (2 หลัก), {MM} = เดือน, {DD} = วัน',
+		accessCodeExample: 'ตัวอย่าง: #myApp_{YYYY}{MM} จะเป็น #myApp_202601',
+		currentAccessCode: 'รหัสเข้าใช้ปัจจุบัน',
+		savePattern: 'บันทึกรูปแบบ',
+		patternSaved: 'บันทึกรูปแบบแล้ว!',
+		setupAccessCode: 'ตั้งค่ารหัสเข้าใช้',
+		setupAccessCodeDesc: 'คุณสามารถปรับแต่งรูปแบบรหัสเพื่อความปลอดภัยเพิ่มเติม',
+		keepDefault: 'ใช้ค่าเริ่มต้น',
+		customizeNow: 'ปรับแต่งตอนนี้',
+		settingsHint: 'เปลี่ยนได้ในการตั้งค่า',
+		settings: 'ตั้งค่า'
 	},
 
 	zh: {
@@ -784,7 +884,21 @@ const LANGUAGES = {
 		lastEdited: '编辑',
 		createdFrom: '来自',
 		createdFromIP: '创建自',
-		lastEditedFromIP: '最后编辑自'
+		lastEditedFromIP: '最后编辑自',
+		accessCodeSettings: '访问码设置',
+		accessCodePattern: '访问码模式',
+		accessCodePatternDesc: '自定义您的访问码模式。使用占位符:',
+		accessCodePlaceholders: '{YYYY} = 年(4位), {YY} = 年(2位), {MM} = 月, {DD} = 日',
+		accessCodeExample: '示例: #myApp_{YYYY}{MM} 变成 #myApp_202601',
+		currentAccessCode: '您当前的访问码',
+		savePattern: '保存模式',
+		patternSaved: '访问码模式已保存！',
+		setupAccessCode: '设置访问码',
+		setupAccessCodeDesc: '您可以自定义访问码模式以提高安全性。',
+		keepDefault: '保持默认',
+		customizeNow: '立即自定义',
+		settingsHint: '可在设置中更改',
+		settings: '设置'
 	}
 };
 
