@@ -14,6 +14,7 @@ A powerful, privacy-focused note-taking app that works everywhere - online, offl
 - **Hybrid Storage** - Per-note choice: server sync OR local-only (browser)
 - **Works Offline** - Full PWA with Service Worker
 - **Smart Install Banner** - One-tap app installation on Android/Chrome
+- **Personal Access Codes** - Each user defines their own rotating access code pattern
 - **8 Languages** - EN, DE, IT, FR, PT, JA, TH, ZH (auto-detect)
 - **Dark Mode** - One-click toggle
 - **Smart Sorting** - By name, date, or last edit
@@ -101,9 +102,12 @@ Automatic browser language detection with 8 languages:
 Easy on the eyes, day or night. Toggle with one click.
 
 ### Secure Authentication
-Two-layer security:
-1. **Global Access Code** - Shared code that changes (e.g., monthly)
+Three-layer security:
+1. **Personal Access Code Pattern** - Each user defines their own code pattern (e.g., `#MySecret_{YYYY}{MM}`)
 2. **Personal Password** - Your private password with recovery code
+3. **Brute Force Protection** - Automatic delays and lockouts
+
+New users get a setup wizard to customize their access code. Change it anytime via Settings (⚙️).
 
 ---
 
@@ -255,9 +259,9 @@ Open in browser, create account, start taking notes!
 
 ## Configuration Reference
 
-### Dynamic Access Codes
+### Personal Access Code Patterns
 
-The global code can include date placeholders for automatic rotation:
+Each user can define their own access code pattern for extra security. The pattern uses date placeholders that auto-rotate:
 
 | Placeholder | Output | Example |
 |-------------|--------|---------|
@@ -266,7 +270,21 @@ The global code can include date placeholders for automatic rotation:
 | `{MM}` | Month | 01-12 |
 | `{DD}` | Day | 01-31 |
 
-**Example:** `#secret_{YYYY}{MM}` becomes `#secret_202512` in December 2025
+**Examples:**
+- `#secret_{YYYY}{MM}` → `#secret_202512` (changes monthly)
+- `MyApp_{YY}{MM}{DD}` → `MyApp_251225` (changes daily)
+- `Pass#2024!` → `Pass#2024!` (static, no placeholders)
+
+**How it works:**
+1. New users see a setup wizard after first login
+2. Users can customize their pattern or keep the default
+3. Access code can be changed anytime via Settings (⚙️)
+4. Each user's pattern is stored individually - no shared codes
+
+**Server default pattern** (for new users) is set in `config.php`:
+```php
+'global_code_pattern' => '{YYYY}{MM}',  // Default: 202512
+```
 
 ### Password Requirements
 
